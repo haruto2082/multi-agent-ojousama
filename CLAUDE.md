@@ -1,11 +1,11 @@
 # お嬢様邸 マルチエージェントシステム
 
 ## 起動時の必須手順（コンパクション後も必ず再実行）
-1. 自分のpaneタイトルを確認する（window名は自動変更されるので使わない）
+1. 自分のロールを確認する（window名・pane名は上書きされるので使わない）
    ```bash
-   tmux display-message -p '#{pane_title}'
+   echo $AGENT_ROLE
    ```
-2. paneタイトルに対応するinstructionsを読み込む
+2. AGENT_ROLEに対応するinstructionsを読み込む
    - `ojousama` → `instructions/ojousama.md`
    - `kaseifu`  → `instructions/kaseifu.md`
    - `maid_*`   → `instructions/maid.md`

@@ -24,24 +24,21 @@ fi
 
 echo "お嬢様邸を開設しています... (メイド${MAID_COUNT}体)"
 
-# ── Window 0: ojousama（Claude直接起動）──
-tmux new-session -d -s $SESSION -n "ojousama" -c "$REPO_DIR" -x 250 -y 50 "$CLAUDE_CMD"
+# AGENT_ROLE環境変数付きでClaudeを起動するヘルパー
+# ── Window 0: ojousama ──
+tmux new-session -d -s $SESSION -n "ojousama" -c "$REPO_DIR" -x 250 -y 50 \
+    "env AGENT_ROLE=ojousama $CLAUDE_CMD"
 
-# ── Window 1: staff（家政婦をClaudeで直接起動）──
-tmux new-window -t "${SESSION}:" -n "staff" -c "$REPO_DIR" "$CLAUDE_CMD"
+# ── Window 1: staff（家政婦）──
+tmux new-window -t "${SESSION}:" -n "staff" -c "$REPO_DIR" \
+    "env AGENT_ROLE=kaseifu $CLAUDE_CMD"
 
-# メイド分だけ分割（分割時にClaude直接起動＋都度tiled再適用）
-for i in $(seq 1 $MAID_COUNT); do
-    tmux split-window -t "${SESSION}:1" -c "$REPO_DIR" "$CLAUDE_CMD"
-    tmux select-layout -t "${SESSION}:1" tiled
-done
-
-# paneタイトルをセット（window名はClaudeに上書きされるため）
-tmux select-pane -t "${SESSION}:0.0" -T "ojousama"
-tmux select-pane -t "${SESSION}:1.0" -T "kaseifu"
+# メイド分だけ分割（都度tiled再適用）
 for i in $(seq 1 $MAID_COUNT); do
     MAID_NAME=$(printf "maid_%02d" $i)
-    tmux select-pane -t "${SESSION}:1.$i" -T "$MAID_NAME"
+    tmux split-window -t "${SESSION}:1" -c "$REPO_DIR" \
+        "env AGENT_ROLE=$MAID_NAME $CLAUDE_CMD"
+    tmux select-layout -t "${SESSION}:1" tiled
 done
 
 echo "起動完了"
