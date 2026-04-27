@@ -24,48 +24,40 @@ fi
 
 echo "お嬢様邸を開設しています... (メイド${MAID_COUNT}体)"
 
-# ── Window 0: ojousama（1画面）──
-tmux new-session -d -s $SESSION -n "ojousama" -c "$REPO_DIR"
+# ── Window 0: ojousama ──
+tmux new-session -d -s $SESSION -n "ojousama" -c "$REPO_DIR" -x 250 -y 50
 
 # ── Window 1: staff（家政婦＋メイド全員タイル）──
 tmux new-window -t "${SESSION}:" -n "staff" -c "$REPO_DIR"
 
-# 最初のペイン（家政婦）のIDを取得
-PANE_KASEIFU=$(tmux display-message -t "${SESSION}:staff" -p "#{pane_id}")
-
-# メイド分だけ分割
-PANE_MAIDS=()
+# 分割のたびにtiled再適用してスペースを確保
 for i in $(seq 1 $MAID_COUNT); do
-    PANE_ID=$(tmux split-window -t "${SESSION}:staff" -c "$REPO_DIR" -P -F "#{pane_id}")
-    PANE_MAIDS+=($PANE_ID)
+    tmux split-window -t "${SESSION}:1" -c "$REPO_DIR"
+    tmux select-layout -t "${SESSION}:1" tiled
 done
 
-# タイルレイアウト適用
-tmux select-layout -t "${SESSION}:staff" tiled
+# 最終レイアウト確認
+ACTUAL_PANES=$(tmux list-panes -t "${SESSION}:1" | wc -l | tr -d ' ')
+echo "作成されたpane数: $ACTUAL_PANES（必要: $((MAID_COUNT + 1))）"
 
 sleep 0.5
 
 # ── Claude起動 ──
 
-# ojousama
-tmux send-keys -t $SESSION:ojousama "$CLAUDE_CMD"
-tmux send-keys -t $SESSION:ojousama Enter
+# ojousama（window 0）
+tmux send-keys -t "${SESSION}:0.0" "$CLAUDE_CMD"
+tmux send-keys -t "${SESSION}:0.0" Enter
 sleep 1
 
-# 家政婦
-tmux send-keys -t $PANE_KASEIFU "$CLAUDE_CMD"
-tmux send-keys -t $PANE_KASEIFU Enter
-sleep 1
-
-# メイド
-for PANE_ID in "${PANE_MAIDS[@]}"; do
-    tmux send-keys -t $PANE_ID "$CLAUDE_CMD"
-    tmux send-keys -t $PANE_ID Enter
+# staffウィンドウの全paneにClaudeを起動
+for i in $(seq 0 $MAID_COUNT); do
+    tmux send-keys -t "${SESSION}:1.$i" "$CLAUDE_CMD" 2>/dev/null
+    tmux send-keys -t "${SESSION}:1.$i" Enter 2>/dev/null
     sleep 0.5
 done
 
-# フォーカスをojousamaに
-tmux select-window -t $SESSION:ojousama
+echo "起動完了"
+tmux select-window -t "${SESSION}:0"
 
 if [ -n "$TMUX" ]; then
     tmux switch-client -t $SESSION
