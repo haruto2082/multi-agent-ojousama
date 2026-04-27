@@ -1,0 +1,10 @@
+task_id: "task_001_maid_01"
+from: "kaseifu"
+to: "maid_01"
+action: "workspace/main.pyの全関数に型ヒントを追加する"
+target_files:
+  - "workspace/main.py"
+constraints:
+  - "ロジックは変更しない"
+  - "他のファイルは触れない"
+report_to: "queue/maid_01_report.yaml"

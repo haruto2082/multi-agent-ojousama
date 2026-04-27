@@ -1,0 +1,13 @@
+# 実行時の通信ファイル（examplesは除く）
+queue/*.yaml
+
+# 作業ファイル
+workspace/*
+!workspace/.gitkeep
+
+# ログ
+logs/*
+!logs/.gitkeep
+
+# OS
+.DS_Store

@@ -1,0 +1,9 @@
+task_id: "task_001"
+from: "ojousama"
+to: "kaseifu"
+priority: "normal"
+description: "workspace/内のPythonファイルに型ヒントを追加する"
+constraints:
+  - "ロジックは変更しない"
+  - "テストファイルは触れない"
+completion_condition: "全.pyファイルの関数に型ヒントが付いていること"
