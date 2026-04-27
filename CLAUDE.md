@@ -1,11 +1,11 @@
 # お嬢様邸 マルチエージェントシステム
 
 ## 起動時の必須手順（コンパクション後も必ず再実行）
-1. 自分のtmuxウィンドウ名を確認する
+1. 自分のpaneタイトルを確認する（window名は自動変更されるので使わない）
    ```bash
-   tmux display-message -p '#{window_name}'
+   tmux display-message -p '#{pane_title}'
    ```
-2. ウィンドウ名に対応するinstructionsを読み込む
+2. paneタイトルに対応するinstructionsを読み込む
    - `ojousama` → `instructions/ojousama.md`
    - `kaseifu`  → `instructions/kaseifu.md`
    - `maid_*`   → `instructions/maid.md`

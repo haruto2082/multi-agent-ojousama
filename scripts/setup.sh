@@ -36,6 +36,14 @@ for i in $(seq 1 $MAID_COUNT); do
     tmux select-layout -t "${SESSION}:1" tiled
 done
 
+# paneタイトルをセット（window名はClaudeに上書きされるため）
+tmux select-pane -t "${SESSION}:0.0" -T "ojousama"
+tmux select-pane -t "${SESSION}:1.0" -T "kaseifu"
+for i in $(seq 1 $MAID_COUNT); do
+    MAID_NAME=$(printf "maid_%02d" $i)
+    tmux select-pane -t "${SESSION}:1.$i" -T "$MAID_NAME"
+done
+
 echo "起動完了"
 tmux select-window -t "${SESSION}:0"
 
