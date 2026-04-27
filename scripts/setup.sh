@@ -24,7 +24,6 @@ fi
 
 echo "お嬢様邸を開設しています... (メイド${MAID_COUNT}体)"
 
-# AGENT_ROLE環境変数付きでClaudeを起動するヘルパー
 # ── Window 0: ojousama ──
 tmux new-session -d -s $SESSION -n "ojousama" -c "$REPO_DIR" -x 250 -y 50 \
     "env AGENT_ROLE=ojousama $CLAUDE_CMD"
@@ -33,12 +32,22 @@ tmux new-session -d -s $SESSION -n "ojousama" -c "$REPO_DIR" -x 250 -y 50 \
 tmux new-window -t "${SESSION}:" -n "staff" -c "$REPO_DIR" \
     "env AGENT_ROLE=kaseifu $CLAUDE_CMD"
 
-# メイド分だけ分割（都度tiled再適用）
+# メイド分だけ分割
 for i in $(seq 1 $MAID_COUNT); do
     MAID_NAME=$(printf "maid_%02d" $i)
     tmux split-window -t "${SESSION}:1" -c "$REPO_DIR" \
         "env AGENT_ROLE=$MAID_NAME $CLAUDE_CMD"
     tmux select-layout -t "${SESSION}:1" tiled
+done
+
+sleep 0.5
+
+# pane毎に@agent_idオプションを設定（参照repoと同じ方式）
+tmux set-option -p -t "${SESSION}:0.0" @agent_id "ojousama"
+tmux set-option -p -t "${SESSION}:1.0" @agent_id "kaseifu"
+for i in $(seq 1 $MAID_COUNT); do
+    MAID_NAME=$(printf "maid_%02d" $i)
+    tmux set-option -p -t "${SESSION}:1.$i" @agent_id "$MAID_NAME"
 done
 
 echo "起動完了"
