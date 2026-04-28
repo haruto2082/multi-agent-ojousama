@@ -1,0 +1,84 @@
+title = "Gitleaks config for multi-agent-ojousama"
+
+# ============================================
+# Allowlist: 許可パターン（誤検知を防ぐ）
+# ============================================
+
+[allowlist]
+description = "Allowlist for sample files, docs, and placeholders"
+
+paths = [
+    '''tests/.*''',
+    '''memory/MEMORY\.md\.sample''',
+    '''.*\.sample''',
+]
+
+regexes = [
+    '''README.*\.md:.*xxx.*''',
+    '''README.*\.md:.*placeholder''',
+    '''SECURITY\.md:.*''',
+]
+
+# ============================================
+# Custom Rules: カスタム検出ルール
+# ============================================
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API Key"
+regex = '''sk-ant-[a-zA-Z0-9_\-]{20,}'''
+tags = ["anthropic", "api-key", "secret"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Key"
+regex = '''sk-[a-zA-Z0-9]{20,}'''
+tags = ["openai", "api-key", "secret"]
+
+[[rules]]
+id = "notion-api-token"
+description = "Notion API Token (Integration Secret)"
+regex = '''ntn_[a-zA-Z0-9]{50,}'''
+tags = ["notion", "api-key", "secret"]
+
+[[rules]]
+id = "github-pat"
+description = "GitHub Personal Access Token"
+regex = '''gh[pousr]_[A-Za-z0-9]{36,}'''
+tags = ["github", "pat", "secret"]
+
+[[rules]]
+id = "github-fine-grained-pat"
+description = "GitHub Fine-grained PAT"
+regex = '''github_pat_[A-Za-z0-9_]{82}'''
+tags = ["github", "pat", "secret"]
+
+[[rules]]
+id = "ntfy-bearer-token"
+description = "ntfy access token (Bearer style)"
+regex = '''tk_[a-zA-Z0-9]{20,}'''
+tags = ["ntfy", "token", "secret"]
+
+[[rules]]
+id = "bearer-token-generic"
+description = "Generic Bearer Token"
+regex = '''Bearer [a-zA-Z0-9_\-\.]{20,}'''
+tags = ["bearer", "token"]
+
+[[rules]]
+id = "generic-password"
+description = "Generic password assignment"
+regex = '''(?i)(password|passwd|pwd|secret)\s*[=:]\s*['"][^'"]{8,}['"]'''
+tags = ["password", "secret"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API key pattern"
+regex = '''(?i)api[_-]?key\s*[=:]\s*['"][a-zA-Z0-9_\-\.]{20,}['"]'''
+tags = ["api-key", "secret"]
+
+[[rules]]
+id = "private-key-block"
+description = "PEM private key block"
+regex = '''-----BEGIN (RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----'''
+tags = ["private-key", "secret"]

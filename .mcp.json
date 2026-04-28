@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "/Users/nakamuraharukadai/.nvm/versions/node/v24.14.1/bin/playwright-mcp",
+      "args": [],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,20 @@
+---
+# multi-agent-ojousama 集中設定
+# 各スクリプト・スキルから読み込まれる単一情報源。
+
+maid_count: 8
+shell: zsh
+permission_mode: default
+language: ja
+
+# Bloom routing: ロール別の推奨モデル割当
+bloom_routing:
+  ojousama: opus
+  shitsuji: opus
+  kaseifu: sonnet
+  maid: sonnet
+  kessen_maid: opus
+
+# ntfy 通知設定（自前サーバ使用時のみ有効化）
+ntfy_topic: ""
+ntfy_enabled: false

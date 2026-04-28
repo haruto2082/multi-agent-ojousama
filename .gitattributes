@@ -1,0 +1,11 @@
+# Shell scripts must use LF
+*.sh text eol=lf
+
+# Windows batch files must use CRLF (将来用)
+*.bat text eol=crlf
+
+# YAML / Markdown / TOML はテキスト扱い、改行は LF
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf
+*.toml text eol=lf

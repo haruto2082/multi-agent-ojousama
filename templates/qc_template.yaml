@@ -1,0 +1,15 @@
+# 標準テンプレート: shitsuji → kaseifu 用 QC結果 YAML
+# 配置先: queue/shitsuji_qc_{maid_NN}.yaml
+# 使い方: 執事がメイドの成果物を点検した結果を本形式で出力。
+
+task_id: "task_{NNN}_maid_{NN}"      # 必須: 検査対象 task と一致
+from: "shitsuji"                     # 必須: 固定
+to: "kaseifu"                        # 必須: 固定
+reviewed_maid: "maid_{NN}"           # 必須: 検査対象メイド
+scope_match: true                    # 必須: target_files / constraints を逸脱していないか
+acceptance_check:                    # 必須: task の acceptance_criteria 各項
+  criterion_1: "true/false"
+test_passed: true                    # 必須: テスト実行結果（不要なら null）
+build_passed: true                   # 必須: ビルド結果（不要なら null）
+verdict: "accept"                    # 必須: accept / reject / redo
+comments: ""                         # 推奨: 指摘・補足

@@ -1,0 +1,31 @@
+# 標準テンプレート: maid → kaseifu 用 report YAML
+# 配置先: queue/maid_{NN}_report.yaml
+# 使い方: タスク完了時に本ファイル形式で上書き出力する。
+#
+# メイドは "evidence の列挙" が主責務。pass/fail の最終判定は執事QC (qc_template.yaml) で行う。
+
+task_id: "task_{NNN}_maid_{NN}"      # 必須: 受領した task YAML と一致させる
+from: "maid_{NN}"                    # 必須
+to: "kaseifu"                        # 必須: 固定
+phase: "implementation"              # 任意: 受領 task と同じ
+status: "done"                       # 必須: assigned / in_progress / done / failed
+summary: ""                          # 必須: 実施内容を2〜3文
+files_created: []                    # 必須: 新規作成したファイル
+files_modified: []                   # 必須: 変更したファイル
+# acceptance_check の各項目には evidence を必ず記載する
+# 推奨: 構造化形式 (criterion → evidence 必須)
+# acceptance_check:
+#   criterion_1:
+#     statement: "<criterion 文面>"
+#     evidence: "<grep/diff出力 or 該当ファイル+行番号 or コマンド結果>"
+#     self_assessment: "likely_pass / uncertain / likely_fail"  # pass/fail 断定はしない
+# 互換: 既存スキーマの簡易記述 (criterion_1: "true") も引き続き許容する。
+acceptance_check:                    # 推奨: task の acceptance_criteria に対する自己確認
+  criterion_1:
+    statement: ""
+    evidence: ""
+    self_assessment: "likely_pass"
+errors: null                         # 失敗時のみ: エラー要約
+skill_candidate:                     # 任意: 今回の経験で再利用価値のある手順
+  found: false                       # true/false
+  description: ""                    # 何をスキル化できそうか

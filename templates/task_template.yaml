@@ -1,0 +1,28 @@
+# 標準テンプレート: kaseifu → maid 用 task YAML
+# 配置先: queue/kaseifu_to_maid_{NN}.yaml
+# 使い方: 本ファイルをコピーし、{}の値を埋める。任意項目は不要なら削除可。
+# 起票後セルフチェック・verification_steps と acceptance_criteria の役割分離は
+#   instructions/kaseifu.md / templates/report_template.yaml を参照。
+
+task_id: "task_{NNN}_maid_{NN}"      # 必須: 連番。redo時は新IDを発行
+parent_cmd: "task_{NNN}"             # 必須: ojousama→kaseifu の cmd YAMLのtask_id
+from: "kaseifu"                      # 必須: 固定
+to: "maid_{NN}"                      # 必須: 担当メイド
+phase: "implementation"              # 任意: investigation / implementation / verification / fix
+purpose: ""                          # 推奨: なぜやるか（1〜2文）
+action: |                            # 必須: 何をやるか（具体的に）
+  {実行してほしい作業を箇条書き or 段落で}
+target_files:                        # 必須: 触ってよいファイル
+  # target_files: [] (空配列) 許容: 書き込み対象なし (investigation / verification 系で使う)
+  # 空配列でも constraints と F-RULE は遵守 (Read は可、Edit/Write は禁止)
+  - ""
+constraints:                         # 必須: 触ってはいけない・守るべきルール
+  - "他メイドの担当ファイルに触らない"
+  - "通信は queue/ 内のYAMLファイル経由のみ"
+acceptance_criteria:                 # 推奨: 完了判定の客観条件
+  - ""
+blocked_by: []                       # 任意: 先行task_id（並列禁止依存）
+bloom_level: "L3"                    # 任意: L1記憶/L2理解/L3応用/L4分析/L5評価/L6創造
+redo_of: null                        # 任意: 再依頼時のみ前回 task_id
+report_to: "queue/maid_{NN}_report.yaml"  # 必須
+notify_target_override: "ojousama:1.1"   # 任意: 必ず kaseifu pane (ojousama:1.1)

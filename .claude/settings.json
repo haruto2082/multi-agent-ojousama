@@ -9,5 +9,29 @@
       "Bash(cp:*)",
       "Bash(bash:*)"
     ]
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/scripts/hooks/precompact_notify.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/scripts/hooks/precompact_notify.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

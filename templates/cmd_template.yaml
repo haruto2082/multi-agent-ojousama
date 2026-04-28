@@ -1,0 +1,18 @@
+# 標準テンプレート: ojousama → kaseifu 用 cmd YAML
+# 配置先: queue/ojousama_to_kaseifu.yaml
+# 使い方: 殿からの指示を貼るだけ。お嬢様は分析・分解しない。
+
+task_id: "task_{NNN}"                # 必須: 連番でインクリメント
+timestamp: "2026-04-28T15:40:00Z"    # 必須: お嬢様が cmd 発行時の現在時刻を記入。
+                                     #       watchdog がこれを基に経過時間を計算する。
+                                     #       形式: 2026-04-28T15:40:00Z (Z 終端の UTC ISO8601)
+                                     #       取得: date -u +'%Y-%m-%dT%H:%M:%SZ'
+from: "ojousama"                     # 必須: 固定
+to: "kaseifu"                        # 必須: 固定
+priority: "normal"                   # 必須: low / normal / high
+description: |                       # 必須: 殿の指示をそのまま
+  {殿の指示を貼る。一切の分析・分解禁止}
+constraints: []                      # 任意: 殿が明示した場合のみ
+acceptance_criteria: []              # 任意: 殿が明示した完了条件
+north_star: ""                       # 任意: 最終的に達成したい姿（あれば）
+due: null                            # 任意: 期限（ISO8601 もしくは "ASAP"）

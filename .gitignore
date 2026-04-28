@@ -9,5 +9,35 @@ workspace/*
 logs/*
 !logs/.gitkeep
 
+# 認証情報（実ファイルはコミット禁止、sampleはOK）
+config/ntfy_auth.env
+
 # OS
 .DS_Store
+
+# memory/ の実体（サンプルのみコミット）
+memory/MEMORY.md
+
+# logs のバックアップ
+logs/backup_*/
+
+# Python venv（将来用）
+.venv/
+
+# PreCompact hook の発火履歴（run-time ログ、version control 不要）
+scripts/hooks/.precompact_history.log
+
+# Mailbox / archive / reports は run-time 生成物（memory/README.md と同様、コミット対象外）
+queue/inbox/
+queue/archive/
+queue/reports/
+queue/.watchdog_state
+
+# Playwright MCP の調査ログ（run-time）
+.playwright-mcp/
+
+# Claude Code scheduled_tasks ロック
+.claude/scheduled_tasks.lock
+
+# 環境固有の運用メモリ（memory/MEMORY.md と同方針。sample / README のみコミット）
+memory/feedback_*.md
