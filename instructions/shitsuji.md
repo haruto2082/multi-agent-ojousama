@@ -291,6 +291,23 @@ errors: null
 
     対応 task メッセージを既読化し、未読の累積を防ぎます。次サイクルで自分の inbox を grep した際の S/N 比を保つ目的にございます。
 
+### inbox_write 失敗時の rc fallback (補強) <!-- task_062a_notify_rc_check -->
+
+Step 2 (Mailbox 通知) の `inbox_write.sh` 戻り値 (rc) を必ず確認いたします。`rc != 0` (= mailbox 通信失敗 / lock 取得不能 / inbox file 不在等) の節は、Step 3 の tmux nudge を **fallback 経路として明示的に再送** いたします:
+
+```bash
+bash scripts/inbox_write.sh kaseifu "shitsuji 完了: queue/shitsuji_report.yaml (<task_id> / <verdict要約>)" shitsuji
+rc=$?
+if [ $rc -ne 0 ]; then
+  tmux send-keys -t ojousama:1.1 "[fallback nudge] shitsuji 完了: <task_id> / <verdict要約>"
+  tmux send-keys -t ojousama:1.1 Enter
+fi
+```
+
+fallback を送信した事実は `queue/shitsuji_report.yaml` の `notes` フィールドに必ず明記いたします (家政婦が一次手段失敗を把握できるようにするため)。
+
+本 fallback は F-RULE-04 (polling 禁止) と整合いたします — completion event の発生時に **一度だけ** 送信する event-trigger 設計であり、wait loop には該当いたしませぬ。F-RULE-03 (tmux 2 ステップ送信) を例コマンドの通り厳守いたします。watchdog 10 分閾値より短い時間で通知漏れを自己検知することが本節の目的にございます。
+
 ### 設計前提 (なぜ必須化するか)
 
 - **通知漏れ = システム停滞の主因**: 執事 QC は中継点ゆえ、通知が止まると下流 (家政婦最終判定 → お嬢様集約) すべてが止まる。1 件の通知忘れが複数ロール時間を浪費する構造ゆえ、執事の責務として最重要視いたします。

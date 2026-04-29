@@ -50,12 +50,23 @@ summary: "実施内容を 2〜3 文"
 files_created: []
 files_modified: []
 errors: null               # 失敗時は文字列で原因
+notify_status:             # 完了通知の送信結果 (improvement_1_c / gap_1_1+1_2 対応)
+  sent: yes                # yes/no: 通知を送信したかどうか
+  mailbox_rc: 0            # int: scripts/inbox_write.sh の終了コード (0 = 成功)
+  tmux_rc: -1              # int: tmux fallback の終了コード (mailbox_rc != 0 時のみ / 未使用は -1)
+  fallback_used: no        # yes/no: tmux fallback を使ったか (mailbox 失敗時)
 skill_candidate:           # task_flow.md 参照
   found: false
   description: ""
 ```
 
 ロール固有の追加フィールド（例: 執事の `acceptance_check`）は spec 側で定義。
+
+**`notify_status` の意図**: executor が自分の通知 rc を report に明示記録することで、
+家政婦は report Read 時点で「メイドは送ったが届いていない」を判断できる
+(tmux 通知が揮発で起床失敗しても mailbox_rc=0 なら正規経路として完了扱い)。
+mailbox_rc != 0 のときに tmux fallback を試した場合は `fallback_used: yes` と
+`tmux_rc` を記録する。両方失敗なら `sent: no` で needs_review に切替。
 
 ## 5. 通知タイミング規約
 

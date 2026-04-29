@@ -18,7 +18,8 @@
 #      heuristic / approximate match; false positives tolerated.
 #      skipped when target_files is empty (investigation tasks).
 #   e) timestamp field exists at top-level (watchdog requires ISO8601 UTC).
-#      missing -> warn (rc=1). present -> pass. (task_055_followup_02)
+#      missing -> error (rc=2). present -> pass.
+#      (task_055_followup_02 で WARN 導入 / task_062d_lint_check_e_promote で ERROR 昇格)
 #
 # No external deps (yq/jq forbidden). bash + grep + awk only.
 # F-RULE-04: single-shot, no watcher loops.
@@ -213,14 +214,15 @@ lint_file() {
         fi
     fi
 
-    # Check (e): timestamp field exists at top-level. (task_055_followup_02)
+    # Check (e): timestamp field exists at top-level.
     # watchdog.sh relies on `timestamp:` to detect stale cmd/child YAMLs.
-    # Missing -> WARN (rc=1). Phase-1 introduction; promote to ERROR later.
+    # Missing -> ERROR (rc=2). Phase-2 完了 (task_062d_lint_check_e_promote).
+    # timestamp 不在の task YAML は発注不可。
     local timestamp_val
     timestamp_val="$(yaml_get "$file" timestamp)"
     if [ -z "$timestamp_val" ]; then
-        emit WARN "$file" timestamp_missing "timestamp field absent; watchdog cannot age-check (Check e)"
-        bump_rc 1
+        emit ERROR "$file" timestamp_missing "timestamp field absent; watchdog cannot age-check (Check e)"
+        bump_rc 2  # timestamp_missing -> ERROR (task_062d Phase-2)
     else
         emit PASS "$file" timestamp_missing "ok ($timestamp_val) (Check e)"
     fi

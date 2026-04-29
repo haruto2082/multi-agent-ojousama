@@ -227,3 +227,20 @@ bash scripts/inbox_write.sh kaseifu "maid_NN 完了: queue/maid_NN_report.yaml (
 ```bash
 bash scripts/inbox_mark_read.sh maid_NN --filter "task_xxx"
 ```
+
+### inbox_write 失敗時の fallback (rc 確認) <!-- task_062a_notify_rc_check -->
+
+`inbox_write.sh` の戻り値 (rc) を必ず確認する。`rc != 0` (= mailbox 通信失敗 / lock 取得不能 / inbox file 不在等) の場合は、tmux 2 ステップ送信で家政婦 pane (`ojousama:1.1`) へ直接 nudge を送る:
+
+```bash
+bash scripts/inbox_write.sh kaseifu "maid_NN 完了: queue/maid_NN_report.yaml (<task_id> / <要約>)" maid_NN
+rc=$?
+if [ $rc -ne 0 ]; then
+  tmux send-keys -t ojousama:1.1 "[fallback nudge] maid_NN 完了: <task_id> / <要約>"
+  tmux send-keys -t ojousama:1.1 Enter
+fi
+```
+
+fallback を送信した事実は report YAML の `notes` フィールドに必ず明記する（家政婦が一次手段失敗を把握できるようにするため）。
+
+本 fallback は F-RULE-04（polling 禁止）と整合する — completion event の発生時に **一度だけ** 送信する event-trigger 設計であり、wait loop ではない。F-RULE-03（tmux 2 ステップ送信）を例コマンドの通り厳守する。watchdog 10 分閾値より短い時間で通知漏れを自己検知することが本節の目的である。

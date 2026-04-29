@@ -15,3 +15,17 @@ build_passed: true                   # 必須: ビルド結果（不要なら nu
 # 旧表記 (accept/reject) は廃止: accept→pass, reject→fail と読み替える。
 verdict: "pass"                      # 必須: pass / fail / redo
 comments: ""                         # 推奨: 指摘・補足
+# notify_status: 完了通知の送信結果 (improvement_1_c / gap_1_1+1_2 対応)
+# 執事も家政婦への QC 結果通知の rc を記録する (report YAML 共通スキーマと同形式)。
+# mailbox_rc=0 で正規完了。mailbox 失敗時は tmux fallback の rc を tmux_rc に記録。
+notify_status:
+  sent: yes                          # yes/no: 通知を送信したか
+  mailbox_rc: 0                      # int: scripts/inbox_write.sh の終了コード
+  tmux_rc: -1                        # int: tmux fallback の終了コード (未使用は -1)
+  fallback_used: no                  # yes/no: tmux fallback を使ったか
+# severity: needs_review 発火時の処理優先度 (task_062g / improvement_3_a)
+# 詳細は instructions/common/forbidden_actions.md
+# 「## needs_review 発火閾値の具体例」を参照 (report_template.yaml と同一定義)。
+# low / medium / high / critical の 4 段階。
+# 執事 verdict が fail / redo の場合、severity を high 以上にすることが多い。
+severity: low                        # low / medium / high / critical
