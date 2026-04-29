@@ -59,6 +59,28 @@
           }
         ]
       }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/scripts/hooks/postcompact_resume.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/scripts/hooks/postcompact_resume.sh",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }
