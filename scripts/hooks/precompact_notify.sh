@@ -81,10 +81,12 @@ if [ -x "$NTFY_SH" ]; then
     bash "$NTFY_SH" -t "compaction" -p high "$msg" >/dev/null 2>&1 || true
 fi
 
-# 8. 自動 /compact 送信 (お嬢様緊急要請 2026-04-29):
-#    発火元 pane に /compact を tmux 2 ステップ (F-RULE-03) で送り、context limit 到達時に
-#    殿の介入なしで自己復旧させる。PRECOMPACT_AUTO_COMPACT=0 で無効化可能。
-if [ "${PRECOMPACT_AUTO_COMPACT:-1}" != "0" ] \
+# 8. 自動 /compact 送信 (お嬢様緊急要請 2026-04-29 / 緊急 stop 適用 2026-04-29):
+#    発火元 pane に /compact を tmux 2 ステップ (F-RULE-03) で送り context limit 自己復旧を企図。
+#    task_056_followup_01: 自己 /compact ループ (.precompact_history.log 2026-04-29T05:50/05:52
+#    1 分 37 秒間隔 2 連発) 観測のためデフォルト無効化。opt-in 復活: PRECOMPACT_AUTO_COMPACT=1
+#    お嬢様承認 2026-04-29T06:11:07Z / shitsuji_report task_056_shitsuji_analysis verdict=適用すべき
+if [ "${PRECOMPACT_AUTO_COMPACT:-0}" != "0" ] \
     && [ -n "$parent_pane" ] \
     && command -v tmux >/dev/null 2>&1; then
     sleep 0.3
