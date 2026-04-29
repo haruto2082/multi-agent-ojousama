@@ -204,6 +204,25 @@ bash scripts/notify_human.sh maid_NN "permission 承認待ち: <作業内容>"
 
 並行で家政婦への report (`status: needs_review`) を必ず書く（集約フロー保護）。詳細規範 (F001 例外規範 / 経路 / 並行義務 / 4ロール参照表) は `instructions/common/forbidden_actions.md` の「## 人間判断待ち通知 (notify_human) と F001 例外」を参照。
 
+### severity=critical 通知 (task_064d 拡張) <!-- task_064e -->
+
+D-RULE 抵触兆候 / F-RULE-09 違反兆候 / acceptance_criteria 解釈不能 / queue プロトコル破綻 等の **重大事象** に該当する場合は、`--severity critical --category <id>` を付けて発報する。これにより 3 経路同時配信 (`queue/inbox/ojousama_critical.yaml` 永続 append + tmux 2 ステップ + ntfy push) となり、お嬢様が見落とさない:
+
+```bash
+bash scripts/notify_human.sh maid_NN "<msg>" \
+  --severity critical \
+  --category <d_rule|f_rule_09|acceptance_unparseable|system_failure> \
+  --related-yaml queue/maid_NN_report.yaml
+```
+
+`category` 発火基準 (4 種):
+- `d_rule`: D-RULE-001〜008 抵触兆候 (rm -rf / force push / sudo / SIGKILL / dd / `.git/` 直接編集 等)
+- `f_rule_09`: F-RULE-09 違反兆候 (D-RULE 抵触の前段)
+- `acceptance_unparseable`: task YAML の acceptance_criteria 解釈不能 (前提矛盾 / 参照先消失)
+- `system_failure`: queue/ プロトコル破綻 / Mailbox System 故障 / watchdog 永続停止
+
+旧 signature (2-arg `bash scripts/notify_human.sh maid_NN "<msg>"`) は `severity=low` default で互換動作するため、permission 待ち等の通常通知は引き続き旧形式でよい (詳細 schema は `instructions/common/protocol.md` Section 4.2)。
+
 ## 完了通知 (kaseifu への inbox 通知)
 
 task 完了時（report YAML を Write した直後）、必ず以下を実行して家政婦の inbox に完了通知を投函する：

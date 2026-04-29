@@ -24,6 +24,14 @@ version: "0.2"
 | **F-RULE-08** | Mailbox System は **子 → 親方向のみ** 運用 (メイド/執事 → 家政婦、家政婦 → お嬢様直接通知は notify_human/tmux のみ)。お嬢様 → 家政婦は cmd YAML + tmux nudge を一次経路とする。`tmux send-keys` は nudge 専用 <!-- task_055_esc_02 --> | nudge 過剰送信は迷惑 / お嬢様 inbox は廃止済 |
 | **F-RULE-09** | 破壊的操作は **Destructive Operation Safety (D-RULE)** に従う / 違反は即停止しユーザー判断を仰ぐ | データ毀損リスク |
 
+### F-RULE-08 緩和補項: severity=critical 例外 <!-- task_064e -->
+
+ただし `severity=critical` の通知のみ `queue/inbox/ojousama_critical.yaml` を例外的に運用する (task_064d / Phase-3 / 2026-04-29)。本 inbox は **accepted_categories** の 4 種 (`d_rule` / `f_rule_09` / `acceptance_unparseable` / `system_failure`) のみを受け付け、`scripts/notify_human.sh` の `--severity critical --category <id> [--related-yaml <path>]` 経由で append される (3 経路同時配信: ojousama_critical inbox 永続 append + tmux 2 ステップ送信 + ntfy push)。
+
+通常通信 (`severity=low / medium / high`) は cmd YAML + tmux nudge を一次経路として維持する。本例外は子 → 親方向の **永続化が必須となる重大事象** (D-RULE 抵触兆候 / system 故障等) を捕捉するための限定再導入であり、F-RULE-08 の方向性原則 (Mailbox は子 → 親方向のみ) は保持される。
+
+詳細 schema (message 構造 / category 発火基準 / 旧 signature 互換) は `instructions/common/protocol.md` Section 4 を参照。
+
 ### F-RULE-05 緊急例外: 家政婦無応答時の執事セーフティネット
 
 - 家政婦が N 時間無応答 (目安: 1 時間) かつメイドへの進行中タスクが存在する場合、

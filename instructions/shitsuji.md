@@ -463,3 +463,22 @@ bash scripts/notify_human.sh shitsuji "[shitsuji] 判断待ち: <内容>"
 
 詳細規範 (F001 例外規範 / 経路 / 並行義務 / 4ロール参照表) は `instructions/common/forbidden_actions.md` の「## 人間判断待ち通知 (notify_human) と F001 例外」を参照。
 
+### severity=critical 通知 (task_064d 拡張) <!-- task_064e -->
+
+QC 中に D-RULE 抵触兆候 / F-RULE-09 違反兆候 / acceptance_criteria 解釈不能 / queue プロトコル破綻 等を検出いたしました折は、`--severity critical --category <id>` を付けて発報いたします。3 経路同時配信 (`queue/inbox/ojousama_critical.yaml` 永続 append + tmux 2 ステップ + ntfy push) によりお嬢様の見落としを防ぎます:
+
+```bash
+bash scripts/notify_human.sh shitsuji "<msg>" \
+  --severity critical \
+  --category <d_rule|f_rule_09|acceptance_unparseable|system_failure> \
+  --related-yaml queue/shitsuji_report.yaml
+```
+
+`category` 発火基準 (4 種):
+- `d_rule`: D-RULE-001〜008 抵触兆候 (rm -rf / force push / sudo / SIGKILL / dd / `.git/` 直接編集 等)
+- `f_rule_09`: F-RULE-09 違反兆候 (D-RULE 抵触の前段)
+- `acceptance_unparseable`: task YAML の acceptance_criteria 解釈不能 (前提矛盾 / 参照先消失)
+- `system_failure`: queue/ プロトコル破綻 / Mailbox System 故障 / watchdog 永続停止
+
+旧 signature (2-arg `bash scripts/notify_human.sh shitsuji "<msg>"`) は `severity=low` default で互換動作いたしますゆえ、L5/L6 判断待ち等の通常通知は引き続き旧形式で差し支えございませぬ (詳細 schema は `instructions/common/protocol.md` Section 4.2)。
+
