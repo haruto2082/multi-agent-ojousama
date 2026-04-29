@@ -29,7 +29,8 @@ scripts/hooks/.precompact_history.log
 scripts/hooks/.postcompact_history.log
 
 # Mailbox / archive / reports は run-time 生成物（memory/README.md と同様、コミット対象外）
-queue/inbox/
+queue/inbox/*
+!queue/inbox/ojousama_critical.yaml
 queue/archive/
 queue/reports/
 queue/.watchdog_state
