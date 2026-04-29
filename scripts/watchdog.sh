@@ -4,10 +4,10 @@
 # Designed to be invoked periodically by launchd (every 5 minutes).
 # F-RULE-04: This script itself does NOT loop; it is one-shot, externally driven.
 #
-# Phase-2 (task_064c): walks queue/cmd_log.yaml to track multiple in-flight
-# cmds and alerts per task individually. The legacy single-cmd path
-# (queue/ojousama_to_kaseifu.yaml) runs alongside for safety until Phase-4.
-# task_066 context-limit auto-recovery is preserved as a parallel concern.
+# Phase-4 (task_064f / 2026-04-29) で legacy 経路削除済 / 本 script は
+# walk_cmd_log + check_context_limit_recovery のみで構成。
+# walk_cmd_log は queue/cmd_log.yaml を walk し並走 cmd を per-task age check。
+# check_context_limit_recovery (task_066) は context limit auto-recovery 並走機能。
 #
 # State file (queue/.watchdog_state) — Phase-2 YAML schema:
 #   version: "2"
@@ -21,8 +21,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-CMD_FILE="$PROJECT_ROOT/queue/ojousama_to_kaseifu.yaml"
-REPORT_FILE="$PROJECT_ROOT/queue/kaseifu_to_ojousama.yaml"
 STATE_FILE="$PROJECT_ROOT/queue/.watchdog_state"
 COMPACT_STATE_FILE="$PROJECT_ROOT/scripts/.watchdog_compact_state"
 CMD_LOG_FILE="${WATCHDOG_CMD_LOG:-$PROJECT_ROOT/queue/cmd_log.yaml}"
@@ -274,86 +272,11 @@ walk_cmd_log() {
 }
 
 # -----------------------------------------------------------------------------
-# Legacy single-task watchdog (queue/ojousama_to_kaseifu.yaml).
-# Preserved during Phase-2/3; retired in Phase-4. Shares dedupe state with
-# walk_cmd_log via read_alerted_ts/write_alerted_ts so duplicate alerts are
-# avoided when both paths observe the same task_id.
-# -----------------------------------------------------------------------------
-check_legacy_single_task() {
-    if [ ! -f "$CMD_FILE" ]; then
-        log "no cmd file; nothing to watch"
-        return 0
-    fi
-
-    local cmd_task_id cmd_ts report_task_id cmd_epoch now_epoch elapsed
-    local last_alerted_ts elapsed_min msg
-    cmd_task_id="$(yaml_get "$CMD_FILE" task_id || true)"
-    cmd_ts="$(yaml_get "$CMD_FILE" timestamp || true)"
-
-    if [ -z "${cmd_task_id:-}" ]; then
-        log "cmd task_id missing; nothing to watch"
-        return 0
-    fi
-    if [ -z "${cmd_ts:-}" ]; then
-        log "cmd timestamp missing (operation rule not yet adopted); skip"
-        return 0
-    fi
-
-    report_task_id=""
-    if [ -f "$REPORT_FILE" ]; then
-        report_task_id="$(yaml_get "$REPORT_FILE" task_id || true)"
-    fi
-    if [ "${report_task_id:-}" = "$cmd_task_id" ]; then
-        log "task $cmd_task_id already reported; ok"
-        return 0
-    fi
-
-    if ! cmd_epoch="$(iso8601_to_epoch "$cmd_ts")"; then
-        log "cannot parse timestamp '$cmd_ts'; skip"
-        return 0
-    fi
-
-    now_epoch="$(date -u +%s)"
-    elapsed=$(( now_epoch - cmd_epoch ))
-    if [ "$elapsed" -lt "$THRESHOLD" ]; then
-        log "task $cmd_task_id elapsed=${elapsed}s < threshold=${THRESHOLD}s; ok"
-        return 0
-    fi
-
-    last_alerted_ts="$(read_alerted_ts "$cmd_task_id")"
-    if [ -n "$last_alerted_ts" ]; then
-        log "already alerted for $cmd_task_id at $last_alerted_ts; skip"
-        return 0
-    fi
-
-    elapsed_min=$(( elapsed / 60 ))
-    msg="[watchdog] $cmd_task_id unreported for ${elapsed_min}min (threshold ${THRESHOLD}s)"
-
-    if command -v tmux >/dev/null 2>&1; then
-        tmux send-keys -t "$TARGET_PANE" "$msg" 2>/dev/null || log "tmux send-keys failed (pane=$TARGET_PANE)"
-        tmux send-keys -t "$TARGET_PANE" Enter 2>/dev/null || true
-    else
-        log "tmux not installed; skip pane notify"
-    fi
-    if [ -x "$NTFY_SCRIPT" ] || [ -f "$NTFY_SCRIPT" ]; then
-        if bash "$NTFY_SCRIPT" "$msg" >/dev/null 2>&1; then
-            log "ntfy ok"
-        else
-            log "ntfy send failed (likely missing NTFY_TOPIC or network); ignored"
-        fi
-    else
-        log "ntfy.sh not found at $NTFY_SCRIPT; skip"
-    fi
-
-    write_alerted_ts "$cmd_task_id" "$cmd_ts"
-    log "alert sent for $cmd_task_id (legacy)"
-}
-
-# -----------------------------------------------------------------------------
-# main: run all three checks; one failure must not silence the others.
+# main: run two checks; one failure must not silence the other.
+# task_064f / Phase-4 legacy removal
 # -----------------------------------------------------------------------------
 check_context_limit_recovery || log "context_limit_recovery failed (ignored)"
 walk_cmd_log                  || log "walk_cmd_log failed (ignored)"
-check_legacy_single_task      || log "legacy_single_task failed (ignored)"
 
+# task_064f / Phase-4 legacy removal
 exit 0
