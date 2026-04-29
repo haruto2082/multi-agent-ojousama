@@ -88,6 +88,21 @@ tmux send-keys -t ojousama:1.1 "新しい指示: queue/ojousama_to_kaseifu.yaml"
 tmux send-keys -t ojousama:1.1 Enter
 ```
 
+### cmd_log への lifecycle event 記録 <!-- task_064b -->
+
+cmd YAML 書込み (Step 2) 直後、必ず以下を実行して `cmd_issued` event を `queue/cmd_log.yaml` に append する:
+
+```bash
+bash scripts/cmd_log_append.sh "$TASK_ID" cmd_issued ojousama '{}' "" low
+# 引数: task_id / event_type / actor / payload_inline / parent_cmd (空) / severity
+```
+
+`$TASK_ID` には Step 2 で発番した cmd YAML の `task_id` (例: `task_001`) を入れる。Step 3 の tmux nudge 送信前後どちらでも可だが、event の取りこぼし防止のため Step 2 直後を推奨する。
+
+cmd lifecycle 全体では 6 events (`cmd_issued` / `cmd_acknowledged` / `cmd_dispatched` / `cmd_qc_started` / `cmd_aggregated` / `cmd_completed`) を append-only で記録する。お嬢様が append するのは `cmd_issued` のみ。残り 5 events は家政婦が「通知タイミング 4 ポイント (instructions/kaseifu.md)」+ 完了報告受領時に append する。
+
+**F-RULE-04 整合**: 本 append は event-trigger 単発書込み (`>>` 演算子) であり、polling やタイマー駆動ではない。`queue/cmd_log.yaml` は append-only で既存 events を改変しない。
+
 ### Step 5: あなたへの報告例
 - 「メイドたちに workspace/ へ8ファイル作らせましたわ」
 - 「すべて完了しましたわ。…べ、別に褒めなくていいけど」

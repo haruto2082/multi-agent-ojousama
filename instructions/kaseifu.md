@@ -467,20 +467,50 @@ cmd 受領・報告時に watchdog (`scripts/watchdog.sh`) との整合を保つ
    - cmd YAML を Read した直後に送る
    - 形式: 「task_NNN 受領。<1行で分担方針>」
    - 例: 「task_030/031/032 受領。maid_05/06/07 に並列発注予定」
+   - cmd_log append (`cmd_acknowledged`): <!-- task_064b -->
+     ```bash
+     bash scripts/cmd_log_append.sh "$TASK_ID" cmd_acknowledged kaseifu '{}' "$PARENT_CMD" low
+     ```
 
 2. **発注完了通知** (メイド/執事 nudge 完了直後 / 必須)
    - メイド/執事への task YAML 発注と nudge 送信が完了した時点で送る
    - 形式: 「task_NNN 発注完了。<内訳1行>」
    - 単一メイドの軽量タスクでも必須 (沈黙=停滞か進行中かをお嬢様が区別できなくなるため)
+   - cmd_log append (`cmd_dispatched`): <!-- task_064b -->
+     ```bash
+     bash scripts/cmd_log_append.sh "$TASK_ID" cmd_dispatched kaseifu '{assignee: maid_NN}' "$PARENT_CMD" low
+     ```
 
 3. **QC 依頼中通知** (執事 QC 発注時 / 必須)
    - 執事 QC を発注した時点で送る (QC を伴うタスクのみ該当 / 軽微タスクで QC 省略時はスキップ)
    - 形式: 「task_NNN QC依頼中 (執事)」
+   - cmd_log append (`cmd_qc_started`): <!-- task_064b -->
+     ```bash
+     bash scripts/cmd_log_append.sh "$TASK_ID" cmd_qc_started kaseifu '{}' "$PARENT_CMD" low
+     ```
 
 4. **集約完了通知** (既存 Step 9 / 必須) <!-- task_054_urgent -->
    - お嬢様向け集約 YAML 書込完了時に送る (従来通り)
    - **30秒以内ルール**: `queue/kaseifu_to_ojousama.yaml` を Write した直後 **30秒以内** に必ずお嬢様 pane (`ojousama:0.0`) へ通知する。無音で集約完了させない（task_054_urgent 派生）
    - 通知前に他作業（追加発注 / inbox 整理 / archive 整備等）が割り込んだ場合でも、最低限 1 行「集約完了:<task_id>」を **先送** してから他作業に移る（順序固定）
+   - cmd_log append (`cmd_aggregated`): <!-- task_064b -->
+     ```bash
+     bash scripts/cmd_log_append.sh "$TASK_ID" cmd_aggregated kaseifu '{}' "$PARENT_CMD" low
+     ```
+
+### cmd_log lifecycle event 全体像 <!-- task_064b -->
+
+cmd lifecycle 全体で 6 events を append-only で記録する: `cmd_issued` (お嬢様 / Step 2 直後) → `cmd_acknowledged` (家政婦 / 受領) → `cmd_dispatched` (家政婦 / 発注完了) → `cmd_qc_started` (家政婦 / QC 依頼中) → `cmd_aggregated` (家政婦 / 集約完了) → `cmd_completed` (家政婦 / メイド/執事の完了報告受領時)。
+
+`cmd_completed` は上記 4 ポイント外の event-trigger で、メイド/執事の完了 inbox 受領後に家政婦が append する:
+
+```bash
+bash scripts/cmd_log_append.sh "$TASK_ID" cmd_completed kaseifu '{from: maid_NN}' "$PARENT_CMD" low
+```
+
+`$TASK_ID` には対象 task の task_id (例: `task_064b_instructions_cmd_log_steps`) を入れ、`$PARENT_CMD` には親 cmd の task_id (例: `task_064`) を入れる。親 cmd が無い場合は空文字 (`""`) を渡せば `parent_cmd: null` で記録される (`scripts/cmd_log_append.sh` 引数仕様 L46-50 参照)。
+
+**F-RULE-04 整合**: 各 append は event-trigger 単発書込み (`>>` 演算子) であり、polling やタイマー駆動ではない。`queue/cmd_log.yaml` は append-only で既存 events を改変しない (task_063 cmd_log_design Section 1 整合)。
 
 ### 通知の長さ・形式
 
