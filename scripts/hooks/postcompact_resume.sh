@@ -79,13 +79,18 @@ esac
         >> "$HISTORY_LOG"
 } 2>/dev/null || true
 
-# 6. nudge self pane only when unread > 0 (F-RULE-03 / "inbox{N}" format only)
-#    Self-loop guarantee: this hook NEVER sends a slash-command. Body is plain
-#    "inbox{N}" text so the resumed agent reads its own inbox via Read tool.
-if [ "$unread" -gt 0 ] \
-    && [ -n "$parent_pane" ] \
-    && command -v tmux >/dev/null 2>&1; then
-    tmux send-keys -t "$parent_pane" "inbox$unread" 2>/dev/null || true
+# 6. nudge self pane (F-RULE-03 / non-slash body / sent every PostCompact)
+#    case_B (task_066 / お嬢様 ts=2026-04-29T13:10:10Z): unread=0 でも常時 nudge。
+#    /compact 直後は inbox 未読が空でも作業継続のため resume 通知が必要。
+#    Self-loop guarantee: this hook NEVER sends a slash-command. Body is
+#    "inbox{N}" (unread>0) or plain "resume" (unread=0) — both non-slash.
+if [ -n "$parent_pane" ] && command -v tmux >/dev/null 2>&1; then
+    if [ "$unread" -gt 0 ]; then
+        NUDGE_MSG="inbox$unread"
+    else
+        NUDGE_MSG="resume"
+    fi
+    tmux send-keys -t "$parent_pane" "$NUDGE_MSG" 2>/dev/null || true
     sleep 0.2
     tmux send-keys -t "$parent_pane" Enter 2>/dev/null || true
 fi

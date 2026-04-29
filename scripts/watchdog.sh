@@ -12,14 +12,73 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CMD_FILE="$PROJECT_ROOT/queue/ojousama_to_kaseifu.yaml"
 REPORT_FILE="$PROJECT_ROOT/queue/kaseifu_to_ojousama.yaml"
 STATE_FILE="$PROJECT_ROOT/queue/.watchdog_state"
+COMPACT_STATE_FILE="$PROJECT_ROOT/scripts/.watchdog_compact_state"
 NTFY_SCRIPT="$PROJECT_ROOT/scripts/ntfy.sh"
 
 THRESHOLD="${WATCHDOG_THRESHOLD_SECONDS:-600}"
 TARGET_PANE="${WATCHDOG_TARGET_PANE:-ojousama:0.0}"
+COMPACT_DEDUPE_SECONDS="${WATCHDOG_COMPACT_DEDUPE_SECONDS:-300}"
+
+# Panes monitored for "Context limit reached" auto-recovery.
+# Covers shitsuji (1.0), kaseifu (1.1), and maid_01..maid_08 (2.0..2.7).
+CONTEXT_LIMIT_PANES=(
+    "ojousama:1.0"
+    "ojousama:1.1"
+    "ojousama:2.0"
+    "ojousama:2.1"
+    "ojousama:2.2"
+    "ojousama:2.3"
+    "ojousama:2.4"
+    "ojousama:2.5"
+    "ojousama:2.6"
+    "ojousama:2.7"
+)
 
 log() {
     echo "[watchdog $(date -u +%Y-%m-%dT%H:%M:%SZ)] $*"
 }
+
+# Detect "Context limit reached" on monitored panes and auto-send /compact.
+# Uses tmux capture-pane to inspect the visible buffer of each pane.
+# Dedupe: COMPACT_DEDUPE_SECONDS (default 300s) per pane via COMPACT_STATE_FILE.
+# F-RULE-03: tmux send is 2-step (command + Enter).
+# F-RULE-04: this function is single-shot; relies on external launchd loop.
+check_context_limit_recovery() {
+    if ! command -v tmux >/dev/null 2>&1; then
+        return 0
+    fi
+    local pane buf last_ts now
+    now="$(date +%s)"
+    for pane in "${CONTEXT_LIMIT_PANES[@]}"; do
+        buf="$(tmux capture-pane -t "$pane" -p 2>/dev/null || true)"
+        [ -z "$buf" ] && continue
+        if ! printf '%s' "$buf" | grep -q 'Context limit reached'; then
+            continue
+        fi
+        last_ts=""
+        if [ -f "$COMPACT_STATE_FILE" ]; then
+            last_ts="$(grep "^$pane=" "$COMPACT_STATE_FILE" 2>/dev/null | cut -d= -f2)"
+        fi
+        if [ -n "$last_ts" ] && [ $((now - last_ts)) -le "$COMPACT_DEDUPE_SECONDS" ]; then
+            log "context limit on $pane; deduped (last sent ${last_ts})"
+            continue
+        fi
+        tmux send-keys -t "$pane" "/compact" 2>/dev/null || true
+        sleep 0.2
+        tmux send-keys -t "$pane" Enter 2>/dev/null || true
+        mkdir -p "$(dirname "$COMPACT_STATE_FILE")"
+        if [ -f "$COMPACT_STATE_FILE" ]; then
+            sed -i.bak "/^$pane=/d" "$COMPACT_STATE_FILE" 2>/dev/null || true
+            rm -f "$COMPACT_STATE_FILE.bak"
+        fi
+        printf '%s=%s\n' "$pane" "$now" >> "$COMPACT_STATE_FILE"
+        log "context limit detected on $pane; sent /compact (dedupe=${COMPACT_DEDUPE_SECONDS}s)"
+    done
+}
+
+# Run context-limit check before timestamp watchdog. Failures inside the
+# function are swallowed so the existing report-stall logic always runs.
+check_context_limit_recovery || log "context_limit_recovery failed (ignored)"
 
 # Extract first matching scalar value from a YAML file.
 # Usage: yaml_get <file> <key>
