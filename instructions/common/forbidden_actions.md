@@ -21,7 +21,7 @@ version: "0.2"
 | **F-RULE-05** | 他ロールのpaneを直接操作しない（自分の責務外） | `panes:` 記載値のみ通知許可 |
 | **F-RULE-06** | 日本語パス・日本語変数名を作らない（英数字のみ） | ファイル/関数/変数は ASCII 限定 |
 | **F-RULE-07** | 指揮系統を飛ばさない（あなた→お嬢様→家政婦→執事/メイド の経路を維持） | 階層スキップは F-RULE-01 と同等の重大違反 |
-| **F-RULE-08** | Mailbox System が利用可能な場合は `queue/inbox/{role}.yaml` 経由を優先 / `tmux send-keys` は nudge 専用 | nudge 過剰送信は迷惑 |
+| **F-RULE-08** | Mailbox System は **子 → 親方向のみ** 運用 (メイド/執事 → 家政婦、家政婦 → お嬢様直接通知は notify_human/tmux のみ)。お嬢様 → 家政婦は cmd YAML + tmux nudge を一次経路とする。`tmux send-keys` は nudge 専用 <!-- task_055_esc_02 --> | nudge 過剰送信は迷惑 / お嬢様 inbox は廃止済 |
 | **F-RULE-09** | 破壊的操作は **Destructive Operation Safety (D-RULE)** に従う / 違反は即停止しユーザー判断を仰ぐ | データ毀損リスク |
 
 ### F-RULE-05 緊急例外: 家政婦無応答時の執事セーフティネット

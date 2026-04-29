@@ -321,6 +321,21 @@ grep -A2 'target_files:' queue/kaseifu_to_maid_*.yaml \
 4. 未報告メイドのみ再通知（同時通知厳禁: 0.3秒間隔, F003）
 5. 全 report が揃えば `queue/kaseifu_to_ojousama.yaml` を集約・お嬢様に通知
 
+## 報告漏れ再発防止チェックリスト
+<!-- task_054_urgent -->
+
+集約サイクル完了時に下記を順に自己点検する。1 つでも未実施なら「集約完了」と称してはならない。
+チェックは記憶に頼らず、各項目の **検知方法** を併記する形で運用する。
+
+- a. メイド/執事から完了通知を受けた直後に inbox を Read したか — 検知: nudge 受信後の最初の操作が `cat queue/inbox/kaseifu.yaml` でなければ抜け
+- b. status / errors を Grep で確認したか — 検知: `grep -nE '^(status|errors):' queue/maid_*_report.yaml` の実行履歴が無ければ未確認
+- c. archive (Step 6.5) を実行したか — 検知: `ls queue/archive/maid_NN_report_<task_id>.yaml` で存在を確認
+- d. 集約 YAML を Write したか — 検知: `queue/kaseifu_to_ojousama.yaml` の `task_id` が当該 cmd と一致するか確認
+- e. mirror (Step 8) を実行したか — 検知: `ls queue/reports/kaseifu_to_ojousama_<task_id>.yaml` で存在を確認
+- f. お嬢様 pane へ tmux 通知 (Step 9) を **30秒以内** に送ったか — 検知: 「30秒以内ルール」未充足 / お嬢様から催促が来た場合は逆算で発覚
+- g. inbox の該当メッセージを `read: true` に更新したか — 検知: `grep -nE 'read: false' queue/inbox/kaseifu.yaml` で残存を確認
+- h. お嬢様から催促が来た場合は a〜g のどこで止まったか **即遡及確認** — 検知: 催促受信後の最初のアクションが本リスト再走査でなければ遡及不足
+
 ## Context 効率運用
 
 家政婦は context 上限に逼迫しやすい。以下の運用ルールで自律的に節約する。
@@ -381,6 +396,18 @@ grep -nE '^status:' queue/maid_*_report.yaml queue/shitsuji_report.yaml
 
 本運用は F-RULE-04 と整合する。inbox の `cat` および report の `grep` は **event-trigger 時のみの一回読み**（起床時・集約直前）であり、polling や wait loop ではない。
 
+## 殿フィードバック反応プロトコル
+<!-- task_054_urgent -->
+
+殿（お嬢様の上位指揮命令者）から再発防止系の指摘を受けた場合、**当日中**（24 時間以内ではなく **当該セッション中**）に該当ルールを文書として明文化する義務を負う。
+
+- 適用範囲: 報告遅延 / ReadFile 許可ダイアログ / context limit 通知漏れ など、再発系の運用指摘全般
+- 文書化先 (いずれか適切な場所): `instructions/kaseifu.md` / `instructions/shitsuji.md` / `instructions/maid.md` / `CLAUDE.md` / `.claude/settings.json`
+- 「メモリーに保存」だけでは **不十分**（メモリーは家政婦個別に閉じる。同種問題は他ロールでも起き得るため文書化が必須）
+- 当日中に Edit を完了し、対応 task として report YAML / 集約 YAML に文書化済の旨を記録する
+- 文書化を後送りにすると同じ指摘が再来し、Critical Thinking Rule の「言われた通りに動いただけ」状態に逆戻りする
+- 緊急度が高ければ家政婦自身が新 task_id を起票してメイドに発注してよい（自律実装方針 / F-RULE-10 と整合）
+
 ## Watchdog 連携
 
 cmd 受領・報告時に watchdog (`scripts/watchdog.sh`) との整合を保つ。
@@ -389,6 +416,43 @@ cmd 受領・報告時に watchdog (`scripts/watchdog.sh`) との整合を保つ
 - `timestamp:` が無い場合は watchdog が無効化される旨を留意し、お嬢様への報告で明記する
 - 報告完了時、`queue/kaseifu_to_ojousama.yaml` の `task_id` を当該 cmd の `task_id` と一致させる（= watchdog 解除条件）
 - 未報告状態が長引く場合、watchdog からの催促は `ojousama:0.0` に届くため、家政婦 pane (`ojousama:1.1`) には届かない点に注意
+
+### 子 cmd YAML への timestamp 必須記入 <!-- task_055_followup_02 -->
+
+家政婦が発行する **子 cmd YAML** (`queue/kaseifu_to_maid_*.yaml` / `queue/kaseifu_to_shitsuji_*.yaml`) にも `timestamp:` を **ISO8601 UTC** で必須記入する。watchdog は子 cmd の age もチェックするため、timestamp 不在の子 cmd は age-check skip 扱いとなり機能不全を招く（task_055 派生で実観測）。
+
+- 形式: `timestamp: "2026-04-29T07:37:06+09:00"` のような ISO8601（タイムゾーンオフセット必須、UTC は `+00:00` または `Z`）
+- 値は **Write 実時刻と一致させる**。古いテンプレを使い回したまま timestamp を更新せずに Write すると、watchdog は実際より古いタスクと誤認する（esc_4_02 運用注意の取込）
+- `scripts/lint_task_yaml.sh` の Check (e) で timestamp 不在は WARN (rc=1) で検知される。発行前に lint をかけて WARN を解消する
+- 段階導入: Phase-1 は WARN、運用が定着したら ERROR (rc=2) への昇格を検討する
+
+## instructions 改訂時の commit 運用 <!-- task_055_followup_01 -->
+
+`instructions/*.md` は task ごとに頻繁に改訂されるが、git commit に追従しないと改訂履歴が追跡不能になり、`git blame` / `git log` で再発防止根拠を遡れなくなる（kaseifu.md だけで 6 回以上の改訂が uncommitted 蓄積した実例あり）。task 完結時に instructions の改訂を **1 commit にまとめて** 履歴に残す。
+
+### 運用ルール
+
+- **task 完結のタイミング**で `instructions/*.md` の差分を 1 commit にまとめる（集約 YAML を Write してお嬢様通知を済ませた後、家政婦の **最終ステップ** として実行）
+- 1 task = 1 instructions commit を原則とする。複数 task が並走中の場合でも、各 task の集約完了時に当該 task 由来の差分のみを commit する
+- 責務帰属: **commit 主体は家政婦**。メイド・執事は instructions を Edit するが commit はしない（target_files の境界を保ちつつ、最終履歴は家政婦が責任を持って残す）
+- 自動化（git hook / CI）は本ルールでは導入しない。手動運用のみ。hook 強制は将来の検討事項
+
+### コミットメッセージ規約
+
+形式: `docs(instructions): <要約> (task_NNN)`
+
+例:
+- `docs(instructions): add Watchdog timestamp 必須 to kaseifu.md (task_055_followup_02)`
+- `docs(instructions): clarify forbidden_actions F-RULE-10 自律実装方針 (task_054)`
+- `docs(instructions): kaseifu.md に commit 運用節を追加 (task_055_followup_01)`
+
+要約は 1 行 50〜70 字程度。複数ファイル変更がある場合は body に箇条書きで補足する（HEREDOC 推奨）。
+
+### F-RULE / D-RULE 整合
+
+- F-RULE-09 / D-RULE: 本ルールは通常の `git commit` のみを扱う。`git push --force` / `git reset --hard` 等の破壊的操作は **D-RULE-002 / D-RULE-003** により本タスクの範囲外（お嬢様承認必須）
+- F-RULE-04 / 自律実装方針: instructions 改訂の commit はメイド報告 → QC → 集約完了 の event-trigger 後に 1 度だけ実行。polling やバッチ走査ではない
+- git config 変更は本ルールに含まない（運用文書化のみ）
 
 ## 上下連絡 (お嬢様への通知ルール)
 
@@ -411,8 +475,10 @@ cmd 受領・報告時に watchdog (`scripts/watchdog.sh`) との整合を保つ
    - 執事 QC を発注した時点で送る
    - 形式: 「task_NNN QC依頼中 (執事)」
 
-4. **集約完了通知** (既存 Step 9 / 必須)
+4. **集約完了通知** (既存 Step 9 / 必須) <!-- task_054_urgent -->
    - お嬢様向け集約 YAML 書込完了時に送る (従来通り)
+   - **30秒以内ルール**: `queue/kaseifu_to_ojousama.yaml` を Write した直後 **30秒以内** に必ずお嬢様 pane (`ojousama:0.0`) へ通知する。無音で集約完了させない（task_054_urgent 派生）
+   - 通知前に他作業（追加発注 / inbox 整理 / archive 整備等）が割り込んだ場合でも、最低限 1 行「集約完了:<task_id>」を **先送** してから他作業に移る（順序固定）
 
 ### 通知の長さ・形式
 
