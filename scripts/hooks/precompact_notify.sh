@@ -34,7 +34,7 @@ extract_field() {
     fi
 }
 
-matcher=$(extract_field matcher)
+matcher=$(extract_field trigger)
 hook_event=$(extract_field hook_event_name)
 [ -z "$matcher" ] && matcher="unknown"
 [ -z "$hook_event" ] && hook_event="PreCompact"
@@ -81,5 +81,17 @@ if [ -x "$NTFY_SH" ]; then
     bash "$NTFY_SH" -t "compaction" -p high "$msg" >/dev/null 2>&1 || true
 fi
 
-# 8. never block compaction
+# 8. 自動 /compact 送信 (お嬢様緊急要請 2026-04-29):
+#    発火元 pane に /compact を tmux 2 ステップ (F-RULE-03) で送り、context limit 到達時に
+#    殿の介入なしで自己復旧させる。PRECOMPACT_AUTO_COMPACT=0 で無効化可能。
+if [ "${PRECOMPACT_AUTO_COMPACT:-1}" != "0" ] \
+    && [ -n "$parent_pane" ] \
+    && command -v tmux >/dev/null 2>&1; then
+    sleep 0.3
+    tmux send-keys -t "$parent_pane" "/compact" 2>/dev/null || true
+    sleep 0.2
+    tmux send-keys -t "$parent_pane" Enter 2>/dev/null || true
+fi
+
+# 9. never block compaction
 exit 0

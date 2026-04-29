@@ -17,6 +17,8 @@
 #      that are not listed in target_files. mismatch -> warn (rc=1).
 #      heuristic / approximate match; false positives tolerated.
 #      skipped when target_files is empty (investigation tasks).
+#   e) timestamp field exists at top-level (watchdog requires ISO8601 UTC).
+#      missing -> warn (rc=1). present -> pass. (task_055_followup_02)
 #
 # No external deps (yq/jq forbidden). bash + grep + awk only.
 # F-RULE-04: single-shot, no watcher loops.
@@ -209,6 +211,18 @@ lint_file() {
                 emit PASS "$file" action_target_files_mismatch "ok (Check d)"
             fi
         fi
+    fi
+
+    # Check (e): timestamp field exists at top-level. (task_055_followup_02)
+    # watchdog.sh relies on `timestamp:` to detect stale cmd/child YAMLs.
+    # Missing -> WARN (rc=1). Phase-1 introduction; promote to ERROR later.
+    local timestamp_val
+    timestamp_val="$(yaml_get "$file" timestamp)"
+    if [ -z "$timestamp_val" ]; then
+        emit WARN "$file" timestamp_missing "timestamp field absent; watchdog cannot age-check (Check e)"
+        bump_rc 1
+    else
+        emit PASS "$file" timestamp_missing "ok ($timestamp_val) (Check e)"
     fi
 }
 

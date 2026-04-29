@@ -1,5 +1,5 @@
 #!/bin/bash
-# Mailbox System: inbox YAML への安全な追記
+# Mailbox System: inbox YAML への安全な追記 + 受信者pane への直接nudge
 #
 # 使い方: scripts/inbox_write.sh <target_role> "<body>" <from>
 # 例:    scripts/inbox_write.sh maid_01 "task: queue/kaseifu_to_maid_01.yaml" kaseifu
@@ -10,6 +10,9 @@
 # - 1メッセージ = { from, ts, body, read: false }
 # - dedupe (task_031): 同一 from + 同一 body + read:false の未読エントリが既存なら
 #   新規追加せず ts のみを最新値に更新する。INBOX_WRITE_DEDUPE=0 で無効化可
+# - nudge 統合 (task_055_urgent_pane_fix): 書込完了後、受信者pane へ "inboxN" を 2ステップ送信
+#   (旧 inbox_watcher.sh + fswatch 依存を排除。書込と通知を同一trigger化し通知ロスを防止)
+#   無効化: INBOX_WRITE_NUDGE=0
 
 set -euo pipefail
 
@@ -116,4 +119,29 @@ if grep -qE '^messages: \[\]' "$INBOX_FILE"; then
     { print }
   ' "$INBOX_FILE" > "$TMP"
   mv "$TMP" "$INBOX_FILE"
+fi
+
+# task_055_urgent_pane_fix: 受信者pane への直接 nudge 発火 (watcher 不要化)
+# 失敗しても本体処理 (inbox 書込) には影響させない
+if [ "${INBOX_WRITE_NUDGE:-1}" != "0" ] && command -v tmux >/dev/null 2>&1; then
+  SESSION="ojousama"
+  case "$TARGET" in
+    kaseifu)  PANE="$SESSION:1.1" ;;
+    shitsuji) PANE="$SESSION:1.0" ;;
+    maid_01)  PANE="$SESSION:2.0" ;;
+    maid_02)  PANE="$SESSION:2.1" ;;
+    maid_03)  PANE="$SESSION:2.2" ;;
+    maid_04)  PANE="$SESSION:2.3" ;;
+    maid_05)  PANE="$SESSION:2.4" ;;
+    maid_06)  PANE="$SESSION:2.5" ;;
+    maid_07)  PANE="$SESSION:2.6" ;;
+    maid_08)  PANE="$SESSION:2.7" ;;
+    *)        PANE="" ;;
+  esac
+  if [ -n "$PANE" ]; then
+    UNREAD="$(grep -c 'read: false' "$INBOX_FILE" 2>/dev/null || echo 0)"
+    tmux send-keys -t "$PANE" "inbox$UNREAD" 2>/dev/null || true
+    sleep 0.2
+    tmux send-keys -t "$PANE" Enter 2>/dev/null || true
+  fi
 fi

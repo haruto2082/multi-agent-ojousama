@@ -25,18 +25,19 @@ if ! command -v fswatch >/dev/null 2>&1; then
 fi
 
 role_to_pane() {
+  # task_055_urgent_pane_fix: 実 pane 配置 (tmux list-panes で確認済) に整合。
+  # ojousama inbox は esc_4_01 で廃止済のため除外。
   case "$1" in
-    ojousama) echo "$SESSION:0.0" ;;
-    kaseifu)  echo "$SESSION:1.0" ;;
-    maid_01)  echo "$SESSION:1.1" ;;
-    maid_02)  echo "$SESSION:1.2" ;;
-    maid_03)  echo "$SESSION:1.3" ;;
-    maid_04)  echo "$SESSION:1.4" ;;
-    maid_05)  echo "$SESSION:1.5" ;;
-    maid_06)  echo "$SESSION:1.6" ;;
-    maid_07)  echo "$SESSION:1.7" ;;
-    maid_08)  echo "$SESSION:1.8" ;;
-    shitsuji) echo "" ;;  # pane未確定。設定後にここを埋める
+    kaseifu)  echo "$SESSION:1.1" ;;
+    shitsuji) echo "$SESSION:1.0" ;;
+    maid_01)  echo "$SESSION:2.0" ;;
+    maid_02)  echo "$SESSION:2.1" ;;
+    maid_03)  echo "$SESSION:2.2" ;;
+    maid_04)  echo "$SESSION:2.3" ;;
+    maid_05)  echo "$SESSION:2.4" ;;
+    maid_06)  echo "$SESSION:2.5" ;;
+    maid_07)  echo "$SESSION:2.6" ;;
+    maid_08)  echo "$SESSION:2.7" ;;
     *)        echo "" ;;
   esac
 }

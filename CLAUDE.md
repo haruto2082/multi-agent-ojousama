@@ -161,6 +161,11 @@ tmux send-keys -t {target_pane} Enter
 
 既存の `queue/ojousama_to_kaseifu.yaml` 等のタスクYAML運用は破壊しない。Mailbox は **追加機構として並走** する。
 
+**運用方向の限定 (task_055_esc_02 / 2026-04-29):** <!-- task_055_esc_02 -->
+Mailbox System は **子 → 親方向のみ** 運用する (メイド → 家政婦、執事 → 家政婦、家政婦 → お嬢様への能動通知は `notify_human.sh` または cmd YAML 経路を使う)。
+お嬢様 → 家政婦は **cmd YAML (`queue/ojousama_to_kaseifu.yaml`) + tmux nudge** を一次経路とし、ojousama inbox (`queue/inbox/ojousama.yaml`) は廃止した (削除済)。
+`scripts/inbox_write.sh ojousama ...` は inbox file not found エラー (exit 2) を返すため、お嬢様向け通知に Mailbox を使わないこと。
+
 # 人間判断待ち通知 (notify_human)
 
 メイド・家政婦・執事のいずれかが「人間判断が必要」または「permission prompt 等で作業継続不能」になった場合、
