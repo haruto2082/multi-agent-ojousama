@@ -95,5 +95,10 @@ if [ "${PRECOMPACT_AUTO_COMPACT:-0}" != "0" ] \
     tmux send-keys -t "$parent_pane" Enter 2>/dev/null || true
 fi
 
-# 9. never block compaction
+# 9. task_066a (option_C / 2-hook flag 連携): PostCompact hook が unread=0 でも
+#    'resume' nudge を送信できるよう flag を touch。flag は PostCompact 完了時に rm。
+touch "$SCRIPT_DIR/.compaction_in_progress" 2>/dev/null || true
+
+# 10. never block compaction
+# task_066a / option_C 2-hook flag 連携
 exit 0

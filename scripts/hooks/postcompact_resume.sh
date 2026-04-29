@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # postcompact_resume.sh - Claude Code PostCompact hook.
-# <!-- task_056_followup_04 --> 全ロール対象 / inbox 自動 resume
-# お嬢様承認 2026-04-29T08:56:45Z (esc_056_01 / bloom_level: L3)
+# <!-- task_056_followup_04 / task_066a (option_C 2-hook flag 連携) -->
+# 全ロール対象 / inbox 自動 resume + unread=0 flag 検知 resume
+# お嬢様承認 2026-04-29T08:56:45Z + option_C 採用 2026-04-29T13:46:07Z
 #
 # 役割: compaction 完了直後に自己 pane の inbox 未読件数 (read: false) を数え、
-#       1件以上なら "inbox{N}" nudge を tmux 2 ステップ (F-RULE-03) で送り起床させる。
-#       送信内容は "inbox{N}" 形式のみ (PreCompact 自己ループ防止)。
-# INVARIANT: 末尾 exit 0 を維持 (非ゼロ exit は compaction 自体を阻害)。
+#       (a) unread > 0 → "inbox{N}" nudge / (b) unread = 0 + flag 存在 → "resume" nudge /
+#       (c) unread = 0 + flag 不在 → 旧来通り skip (task_055_esc_02 / 058 / 059 skip 仕様復活)
+# INVARIANT: 末尾 exit 0 維持 / nudge 内容は plain text のみ (slash command 禁止 / self-loop 防止)
 #
 # Troubleshooting:
 # - Hook firing audit: tail -f scripts/hooks/.postcompact_history.log
@@ -79,21 +80,34 @@ esac
         >> "$HISTORY_LOG"
 } 2>/dev/null || true
 
-# 6. nudge self pane (F-RULE-03 / non-slash body / sent every PostCompact)
-#    case_B (task_066 / お嬢様 ts=2026-04-29T13:10:10Z): unread=0 でも常時 nudge。
-#    /compact 直後は inbox 未読が空でも作業継続のため resume 通知が必要。
+# 6a. 古い flag (.compaction_in_progress) 残留対策 (異常終了時の補正 / mtime > 60 分で強制削除)
+FLAG_FILE="$SCRIPT_DIR/.compaction_in_progress"
+find "$FLAG_FILE" -mmin +60 -delete 2>/dev/null || true
+
+# 6b. nudge 送信判定 (option_C / 2-hook flag 連携 / task_066a)
 #    Self-loop guarantee: this hook NEVER sends a slash-command. Body is
-#    "inbox{N}" (unread>0) or plain "resume" (unread=0) — both non-slash.
+#    "inbox{N}" (unread>0) or plain "resume" (flag 存在 + unread=0) — both non-slash.
 if [ -n "$parent_pane" ] && command -v tmux >/dev/null 2>&1; then
     if [ "$unread" -gt 0 ]; then
         NUDGE_MSG="inbox$unread"
-    else
+        SEND_NUDGE=1
+    elif [ -f "$FLAG_FILE" ]; then
         NUDGE_MSG="resume"
+        SEND_NUDGE=1
+    else
+        SEND_NUDGE=0
     fi
-    tmux send-keys -t "$parent_pane" "$NUDGE_MSG" 2>/dev/null || true
-    sleep 0.2
-    tmux send-keys -t "$parent_pane" Enter 2>/dev/null || true
+
+    if [ "$SEND_NUDGE" = "1" ]; then
+        tmux send-keys -t "$parent_pane" "$NUDGE_MSG" 2>/dev/null || true
+        sleep 0.2
+        tmux send-keys -t "$parent_pane" Enter 2>/dev/null || true
+    fi
 fi
 
+# 6c. flag (.compaction_in_progress) は条件問わず削除 (連続発火時の重複 nudge 防止 / option_C 安全性 3)
+rm -f "$FLAG_FILE" 2>/dev/null || true
+
 # 7. never block compaction (INVARIANT)
+# task_066a / option_C 2-hook flag 連携
 exit 0
