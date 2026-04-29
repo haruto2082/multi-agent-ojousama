@@ -403,6 +403,36 @@ grep -nA 3 'acceptance_check:' queue/maid_NN_report.yaml
 4. 未報告タスクのみ再着手（前提検証 → 実行 → 報告 YAML 作成 → 家政婦通知の順）
 5. 状態が判然といたしませぬ場合は家政婦へ伺いを立て、決して自走いたしませぬ（F006 `skip_premise_check` と整合）
 
+### Mailbox 切替時の TaskList 仮想破棄
+
+Mailbox (`queue/inbox/shitsuji.yaml`) 経由で新 task を受領いたしました折、進行中の旧 task に紐づく TaskList（in-conversation の進捗トラッカー）は **仮想破棄** して新 task に切替えて差し支えございませぬ。下記要件を満たす節に限り上書き許容にございます:
+
+- **(1) Mailbox 経由で新 task を受領**: `queue/inbox/shitsuji.yaml` に未読メッセージが届き、`queue/kaseifu_to_shitsuji_*.yaml` または同等の cmd YAML で新 task が明示されている
+- **(2) 家政婦が完遂判定済の旧 task**: 旧 task について `queue/shitsuji_report.yaml` を Write 済かつ家政婦 inbox へ通知済（家政婦側で `verdict` 受領が完了している）の場合、執事側 TaskList が in_progress 表記でも上書き許容
+- **(3) 旧 report の復元保証**: 旧 `queue/shitsuji_report.yaml` は家政婦側で `queue/archive/` に退避される運用ゆえ、上書きしても履歴復元可能
+- **(4) 新 task の前提検証は通常通り**: 仮想破棄したからといって Step 3（前提検証）を省略してはなりませぬ。新 task YAML の purpose / acceptance_criteria は必ず確認
+
+#### 実例 (task_056 で観測)
+
+本規範は task_056 サイクルにて執事自身の挙動が反例として機能した経緯にございます:
+
+- **進行中**: `task_055_qc_shitsuji`（task_055 系統 QC）の TaskList を保持
+- **家政婦完遂判定**: task_055 系統について家政婦の最終判定が下り、shitsuji_report.yaml が受理された
+- **新 task 受領**: Mailbox 経由で `task_056_shitsuji_analysis` を受領
+- **切替成功**: 旧 TaskList を仮想破棄し、新 task の前提検証 → 分析 → 報告に円滑に移行できた
+
+#### F-RULE 整合
+
+- **F-RULE-04 (polling 禁止)**: TaskList 切替判断は Mailbox 受領 event 駆動の単発判断であり wait loop ではなし
+- **F-RULE-07 (指揮系統スキップ禁止)**: 旧 task 上書き判定の最終権は家政婦側にあり、執事は家政婦完遂判定を確認した上で切替える受動的役割
+- **F006 (skip_premise_check 禁止)**: 仮想破棄は TaskList の話であり、前提検証 (Step 3) は新 task に対し通常通り実施
+
+#### Critical Thinking 整合
+
+旧 task report が `queue/archive/` に退避される運用であれば、TaskList を上書きしても監査証跡は queue/ 側に残ります。すなわち会話履歴の TaskList は補助的な進捗トラッカーに過ぎず、一次データソースは `queue/*.yaml` という CLAUDE.md / 本書 Compaction Recovery 節の原則と整合いたします。
+
+<!-- task_056_followup_03 -->
+
 ## 人間判断待ち通知（notify_human）
 
 執事は **呼ぶ側** と **受ける側** の両方を担います。L5/L6 戦略判断、QC 中の前提矛盾・acceptance_criteria 解釈不能・権限境界の曖昧さ等で停止が見込まれる折に、お嬢様pane（0.0）へ直接通知を申し上げます（F001 例外整合）。
