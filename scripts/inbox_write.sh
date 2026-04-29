@@ -13,6 +13,10 @@
 # - nudge 統合 (task_055_urgent_pane_fix): 書込完了後、受信者pane へ "inboxN" を 2ステップ送信
 #   (旧 inbox_watcher.sh + fswatch 依存を排除。書込と通知を同一trigger化し通知ロスを防止)
 #   無効化: INBOX_WRITE_NUDGE=0
+# - nudge 拡張 (task_056_followup_02): nudge メッセージを "inbox{N}: {body 先頭60字}" 形式へ
+#   拡張。受信側は inbox を Read する前に緊急性を直感判断できる。
+#   sanitize: 改行→空白 / シングル・ダブル引用符を除去 / cut -c1-60 で長さ制限。
+#   tmux send-keys は -l (literal) で送り tmux のキー解釈を回避。F-RULE-03 (2 ステップ送信) 維持。
 
 set -euo pipefail
 
@@ -140,7 +144,14 @@ if [ "${INBOX_WRITE_NUDGE:-1}" != "0" ] && command -v tmux >/dev/null 2>&1; then
   esac
   if [ -n "$PANE" ]; then
     UNREAD="$(grep -c 'read: false' "$INBOX_FILE" 2>/dev/null || echo 0)"
-    tmux send-keys -t "$PANE" "inbox$UNREAD" 2>/dev/null || true
+    # task_056_followup_02: body 先頭60字を sanitize して nudge に同梱
+    BODY_HEAD="$(printf '%s' "$BODY" | tr '\r\n' '  ' | tr -d "\"'" | cut -c1-60)"
+    if [ -n "$BODY_HEAD" ]; then
+      NUDGE_MSG="inbox${UNREAD}: ${BODY_HEAD}"
+    else
+      NUDGE_MSG="inbox${UNREAD}"
+    fi
+    tmux send-keys -t "$PANE" -l "$NUDGE_MSG" 2>/dev/null || true
     sleep 0.2
     tmux send-keys -t "$PANE" Enter 2>/dev/null || true
   fi
