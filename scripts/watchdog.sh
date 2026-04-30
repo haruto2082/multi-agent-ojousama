@@ -69,7 +69,7 @@ iso8601_to_epoch() {
     local ts="$1"
     local clean
     clean="$(echo "$ts" | sed -E 's/\.[0-9]+//; s/Z$//')"
-    if date -j -f "%Y-%m-%dT%H:%M:%S" "$clean" +%s 2>/dev/null; then
+    if date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean" +%s 2>/dev/null; then
         return 0
     fi
     if date -d "$ts" +%s 2>/dev/null; then
