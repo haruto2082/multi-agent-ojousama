@@ -76,11 +76,15 @@ $$e\bigl((1-\tau)t_1+\tau t_2\bigr)\le e(t_1)^{1-\tau}\,e(t_2)^{\tau}\qquad (0<\
 > *"A common abbreviation is to write*
 > $$\Box u = u_{tt} - \Delta u."$$
 
+**和訳：** 「一般的な略記として $\Box u = u_{tt} - \Delta u$ と書く。」
+
 これが **d'Alembertian / wave operator** $\Box$。本文中の $\Box$ は囲み記号ではなくこの**演算子**です。
 
 ### 2.2 解の素性に関する宣言
 
 > *"We shall discover that solutions of the wave equation behave quite differently than solutions of Laplace's equation or the heat equation. For example, these solutions are generally not $C^\infty$, exhibit finite speed of propagation, etc."*
+
+**和訳：** 「波動方程式の解は、Laplace 方程式や熱方程式の解とは全く異なる振舞いをすることを発見するだろう。例えば、これらの解は一般に $C^\infty$ ではなく、有限伝播速度を示すなど。」
 
 ポイント:
 
@@ -123,6 +127,8 @@ $a=1$ が**波動方程式**。
 
 > *"This physical interpretation strongly suggests it will be mathematically appropriate to specify two initial conditions, on the displacement $u$ and the velocity $u_t$, at time $t=0$."*
 
+**和訳：** 「この物理的解釈から、時刻 $t=0$ での変位 $u$ と速度 $u_t$ の 2 つの初期条件を指定することが数学的に適切であることが強く示唆される。」
+
 時間 2 階の方程式なので、初期条件は**位置 $u(\cdot,0)=g$ と速度 $u_t(\cdot,0)=h$ の 2 つ**を与えるのが自然。
 
 ---
@@ -133,7 +139,9 @@ $a=1$ が**波動方程式**。
 
 > *"§2.4.1 Solution by spherical means. We began §§2.2.1 and 2.3.1 by searching for certain scaling invariant solutions of Laplace's equation and the heat equation. For the wave equation however we will instead present the (reasonably) elegant method of solving (1) first for $n=1$ directly and then for $n\ge 2$ by the method of spherical means."*
 
-> **読み方**: §2.2 (Laplace) と §2.3 (Heat) ではスケール不変解 (基本解) を探したが、§2.4 ではアプローチを変えて、まず $n=1$ をそのまま解き、$n\ge 2$ は**球面平均法**で $n=1$ に帰着する、という方針。
+**和訳：** 「§2.4.1 球面平均による解法。§2.2.1 と 2.3.1 では Laplace 方程式と熱方程式のスケール不変解を探索することから始めたが、波動方程式に対しては代わりに (相応に優雅な) 方法を提示する。まず (1) を $n=1$ に対して直接解き、その後 $n\ge 2$ に対しては球面平均法で解く。」
+
+**読み方**: §2.2 (Laplace) と §2.3 (Heat) ではスケール不変解 (基本解) を探したが、§2.4 ではアプローチを変えて、まず $n=1$ をそのまま解き、$n\ge 2$ は**球面平均法**で $n=1$ に帰着する、という方針。
 
 ### 3.2 1 次元の初期値問題 (式 3)
 
@@ -143,6 +151,8 @@ $$\begin{cases}u_{tt}-u_{xx}=0 & \text{in }\mathbb R\times(0,\infty)\\ u=g,\ u_t
 
 > *"Let us first note the PDE in (3) can be 'factored,' to read*
 > $$\Bigl(\tfrac{\partial}{\partial t}+\tfrac{\partial}{\partial x}\Bigr)\Bigl(\tfrac{\partial}{\partial t}-\tfrac{\partial}{\partial x}\Bigr)u = u_{tt}-u_{xx}=0."$$
+
+**和訳：** 「(3) の PDE は『因数分解』できることに注目しよう。すなわち $(\partial_t+\partial_x)(\partial_t-\partial_x)u = u_{tt}-u_{xx}=0$ となる。」
 
 これは形式的計算で確認できます:
 $$\bigl(\partial_t+\partial_x\bigr)\bigl(\partial_t-\partial_x\bigr)u = u_{tt}-u_{tx}+u_{xt}-u_{xx} = u_{tt}-u_{xx}.$$
@@ -154,6 +164,8 @@ $C^2$ なので $u_{tx}=u_{xt}$ で中央項が打ち消されます。
 
 > *Write*
 > $$v(x,t):=\Bigl(\tfrac{\partial}{\partial t}-\tfrac{\partial}{\partial x}\Bigr)u(x,t). \tag{5}$$
+
+**和訳：** 「$v(x,t):=(\partial_t-\partial_x)u(x,t)$ と書く。」
 
 つまり $v=u_t-u_x$。式 (4) によって
 $$v_t(x,t)+v_x(x,t)=0\qquad (x\in\mathbb R,\,t>0).$$
@@ -171,7 +183,9 @@ $$v(x,t) = a(x-t),\tag{6}$$
 > *where we have $b(x):=u(x,0)$. Then*
 > $$u(x,t)=\tfrac12\int_{x-t}^{x+t} a(y)\,dy + b(x+t).\tag{7}"$$
 
-> **解説**: 第 1 項は変数変換 $y=x+t-2s$ ($dy=-2\,ds$) によって $\int_0^t a(x+t-2s)\,ds = \tfrac12\int_{x-t}^{x+t} a(y)\,dy$ となります。$b(x+t)$ は同次部分の解 (左進行波)。
+**和訳：** 「§2.1.2 の公式 (5) を ($n=1,\ b=-1,\ f(x,t)=a(x-t)$ で) 適用すると、$u(x,t)=\int_0^t a(x+(t-s)-s)\,ds + b(x+t)$ となる。ここで $b(x):=u(x,0)$。すると $u(x,t)=\tfrac12\int_{x-t}^{x+t} a(y)\,dy + b(x+t)$。」
+
+**解説**: 第 1 項は変数変換 $y=x+t-2s$ ($dy=-2\,ds$) によって $\int_0^t a(x+t-2s)\,ds = \tfrac12\int_{x-t}^{x+t} a(y)\,dy$ となります。$b(x+t)$ は同次部分の解 (左進行波)。
 
 ---
 
@@ -183,6 +197,8 @@ $$v(x,t) = a(x-t),\tag{6}$$
 > $$b(x)=g(x)\quad (x\in\mathbb R);$$
 > *whereas the second initial condition and (5) imply*
 > $$a(x)=v(x,0)=u_t(x,0)-u_x(x,0)=h(x)-g'(x)\quad (x\in\mathbb R)."$$
+
+**和訳：** 「$b(x):=u(x,0)$。最後に (3) の初期条件を用いて $a$ と $b$ を求める。(3) の第 1 初期条件は $b(x)=g(x)$ ($x\in\mathbb R$) を与える。一方、第 2 初期条件と (5) から $a(x)=v(x,0)=u_t(x,0)-u_x(x,0)=h(x)-g'(x)$ ($x\in\mathbb R$)。」
 
 (7) に代入して整理:
 $$u(x,t) = \tfrac12 \int_{x-t}^{x+t}\bigl[h(y)-g'(y)\bigr]\,dy + g(x+t).$$
@@ -211,11 +227,15 @@ $$\boxed{\,u(x,t)=\tfrac12\bigl[g(x+t)+g(x-t)\bigr]+\tfrac12\int_{x-t}^{x+t}h(y)
 > $$u(x,t)=F(x+t)+G(x-t)$$
 > *for appropriate functions $F$ and $G$. Conversely any function of this form solves $u_{tt}-u_{xx}=0$. Hence the general solution of the one-dimensional wave equation is a sum of the general solution of $u_t - u_x = 0$ and the general solution of $u_t + u_x = 0$. This is a consequence of the factorization (4)."*
 
+**和訳：** 「(8) に照らせば、解 $u$ は $u(x,t)=F(x+t)+G(x-t)$ という形を持つ。逆に、この形の任意の関数は $u_{tt}-u_{xx}=0$ を満たす。したがって 1 次元波動方程式の一般解は、$u_t-u_x=0$ の一般解と $u_t+u_x=0$ の一般解の和である。これは因数分解 (4) の帰結である。」
+
 直感: $F(x+t)$ は **左進行波** (時間が経つと $x$ が小さい方へ動く)、$G(x-t)$ は **右進行波**。因数分解で $(\partial_t+\partial_x)u=0$ と $(\partial_t-\partial_x)u=0$ の 2 系統に分解されたことの直接的帰結。
 
 **Remark (ii) — 滑らかさの保存則** (画像 IMG_3894 上):
 
 > *"We see from (8) that if $g\in C^k$ and $h\in C^{k-1}$, then $u\in C^k$, but is not in general smoother. Thus the wave equation does not cause instantaneous smoothing of the initial data, as does the heat equation."*
+
+**和訳：** 「(8) から、$g\in C^k$ で $h\in C^{k-1}$ ならば $u\in C^k$ だが、一般にはそれより滑らかではないことがわかる。したがって波動方程式は、熱方程式のように初期データの平滑化を瞬時に起こさない。」
 
 熱方程式 ($t>0$ で $C^\infty$) との対比。波動方程式は **滑らかさを増やさない** = 特異性は伝播する = 有限伝播速度の数学的帰結。
 
@@ -229,6 +249,8 @@ $$\boxed{\,u(x,t)=\tfrac12\bigl[g(x+t)+g(x-t)\bigr]+\tfrac12\int_{x-t}^{x+t}h(y)
 > $$\begin{cases}u_{tt}-u_{xx}=0 & \text{in }\mathbb R_+\times(0,\infty)\\ u=g,\ u_t=h & \text{on }\mathbb R_+\times\{t=0\}\\ u=0 & \text{on }\{x=0\}\times(0,\infty),\end{cases}\tag{9}$$
 > *where $g,h$ are given, with $g(0)=h(0)=0$."*
 
+**和訳：** 「反射法。d'Alembert 公式のさらなる応用例として、次の初期値・境界値問題を半直線 $\mathbb R_+=(x>0)$ で考えるとしよう。(9) がそれで、$g,h$ は与えられており、$g(0)=h(0)=0$。」
+
 両立条件 $g(0)=h(0)=0$ は、$x=0$ での Dirichlet 境界 $u=0$ と初期条件の両立から要請されます。
 
 ### 5.2 奇拡張 (本文 p.69 中段)
@@ -236,7 +258,7 @@ $$\boxed{\,u(x,t)=\tfrac12\bigl[g(x+t)+g(x-t)\bigr]+\tfrac12\int_{x-t}^{x+t}h(y)
 > *"We convert (9) into the form (3) by extending $u,g,h$ to all of $\mathbb R$ by odd reflection. That is, we set*
 > $$\tilde u(x,t):=\begin{cases}u(x,t) & x\ge 0,\,t\ge 0\\ -u(-x,t) & x\le 0,\,t\ge 0\end{cases}$$
 > $$\tilde g(x):=\begin{cases}g(x) & x\ge 0\\ -g(-x) & x\le 0\end{cases}\quad \tilde h(x):=\begin{cases}h(x) & x\ge 0\\ -h(-x) & x\le 0\end{cases}"$$
-
+**和訳：** 「(9) を形 (3) に変換するために、$u,g,h$ を奇反射によって全 $\mathbb R$ に拡張する。つまり、$\tilde u(x,t)$ を $x\ge 0$ で $u(x,t)$、$x\le 0$ で $-u(-x,t)$ と定め、同様に $\tilde g,\tilde h$ を定める。」
 奇拡張すると $\tilde u(0,t)\equiv 0$ が**自動的に**成り立ちます (奇関数の原点値はゼロ)。
 
 > **なぜ奇か?**: 偶拡張だと境界値が一般に 0 にならず Dirichlet を破る。奇拡張なら原点で常に 0 でつじつまが合う。
@@ -256,6 +278,8 @@ $$u(x,t)=\begin{cases}\tfrac12\bigl[g(x+t)+g(x-t)\bigr]+\tfrac12\int_{x-t}^{x+t}
 
 > *"If $h\equiv 0$, we can understand formula (10) as saying that an initial displacement $g$ splits into two parts, one moving to the right with speed one and the other to the left with speed one. The latter then reflects off the point $x=0$, where the vibrating string is held fixed."*
 
+**和訳：** 「$h\equiv 0$ ならば、公式 (10) は初期変位 $g$ が 2 つに分かれることを示す。一つは速さ 1 で右に、もう一つは速さ 1 で左に進む。後者は振動する弦が固定されている点 $x=0$ で反射する。」
+
 つまり「**初期形が左右半々に分かれて伝播し、左進行成分は壁で反射して符号反転して戻る**」。実験的にもよく知られた振る舞いを公式が再現しています。
 
 ---
@@ -274,6 +298,8 @@ $$\begin{cases}u_{tt}-\Delta u=0 & \text{in }\mathbb R^n\times(0,\infty)\\ u=g,\
 
 > *"We intend to derive an explicit formula for $u$ in terms of $g,h$. The plan will be to study first the average of $u$ over certain spheres. These averages, taken as functions of the time $t$ and the radius $r$, turn out to solve the Euler–Poisson–Darboux equation, a PDE which we can for odd $n$ convert into the ordinary one-dimensional wave equation. Applying d'Alembert's formula, or more precisely its variant (10), eventually leads us to a formula for the solution."*
 
+**和訳：** 「$g,h$ に関する $u$ の明示公式を導出するつもりである。計画は、まず球面上での $u$ の平均を研究することである。時間 $t$ と半径 $r$ の関数として取られたこれらの平均値は、Euler–Poisson–Darboux 方程式という PDE を満たすことが判明する。これは奇数 $n$ に対して常微分方程式たる 1 次元波動方程式に変換でき、d'Alembert 公式、より正確にはその変種 (10) を適用することで最終的に解の公式に至る。」
+
 **戦略の 4 段階**:
 1. 球面平均 $U(x;r,t)$ を考える
 2. $U$ が EPD 方程式を満たすことを示す
@@ -291,6 +317,8 @@ $$G(x;r):=\fint_{\partial B(x,r)} g(y)\,dS(y),\quad H(x;r):=\fint_{\partial B(x,
 > **記号 $\fint_E$**: 平均積分 (mean integral) $\fint_E f := \dfrac{1}{|E|}\int_E f$。「バー付き積分記号」と呼ぶことも。
 > **記号 $\partial B(x,r)$**: 中心 $x$, 半径 $r$ の球の**境界 (球面)**。$B(x,r)$ は球そのもの。
 > **記号 $dS,\,dS(y)$**: 球面上の表面測度 ($n=3$ なら 2 次元面積要素)。
+>
+> **和訳：** 「$U(x;r,t)$ は点 $x$ 中心、半径 $r$ の球面上での $u$ の平均値である。つまり $\fint_{\partial B(x,r)}$ で球面上の平均。」
 
 「点 $x$ を中心とする半径 $r$ の球面上での $u$ の平均値」を $r$ と $t$ の 2 変数関数として捉え直すのがポイント。
 
@@ -300,6 +328,8 @@ $$G(x;r):=\fint_{\partial B(x,r)} g(y)\,dS(y),\quad H(x;r):=\fint_{\partial B(x,
 > $$\begin{cases}U_{tt}-U_{rr}-\dfrac{n-1}{r}U_r=0 & \text{in }\mathbb R_+\times(0,\infty)\\ U=G,\ U_t=H & \text{on }\mathbb R_+\times\{t=0\}.\end{cases}\tag{14}$$
 
 > **The partial differential equation in (14) is the Euler–Poisson–Darboux equation. (Note that the term $\frac{n-1}{r}U_r$ is the radial part of the Laplacian $\Delta$ in polar coordinates.)**
+
+**和訳：** 「(14) の偏微分方程式が Euler–Poisson–Darboux 方程式である。(項 $\frac{n-1}{r}U_r$ は極座標でのラプラシアン $\Delta$ の動径部分であることに注意。)」
 
 **直感**: 極座標表示でラプラシアンを動径成分と球面成分に分けると、動径部分は
 $$\Delta_{\rm rad} = \partial_r^2 + \dfrac{n-1}{r}\partial_r.$$
@@ -368,6 +398,8 @@ $$\begin{cases}\tilde U_{tt}-\tilde U_{rr}=0 & \text{in }\mathbb R_+\times(0,\in
 > $$\tilde U_{tt}=rU_{tt}=r\Bigl[U_{rr}+\dfrac{2}{r}U_r\Bigr]\quad \text{by (14), with }n=3$$
 > $$=rU_{rr}+2U_r=(U+rU_r)_r=\tilde U_{rr}."$$
 
+**和訳：** 「実際、$\tilde U_{tt}=rU_{tt}=r[U_{rr}+\frac{2}{r}U_r]$ (これは (14) で $n=3$ のとき) $=rU_{rr}+2U_r=(U+rU_r)_r=\tilde U_{rr}$ (最後は積の微分則)。」
+
 ステップを丁寧に書くと:
 1. $\tilde U=rU$ なので $\tilde U_{tt} = rU_{tt}$。
 2. (14) の $n=3$ 版から $U_{tt}=U_{rr}+\dfrac{2}{r}U_r$。
@@ -408,6 +440,8 @@ p.72 下:
 > *and so*
 > $$\dfrac{\partial}{\partial t}\Bigl(\fint_{\partial B(x,t)} g\,dS\Bigr) = \fint_{\partial B(0,1)} Dg(x+tz)\cdot z\,dS(z) = \fint_{\partial B(x,t)} Dg(y)\cdot\dfrac{y-x}{t}\,dS(y)."$$
 
+**和訳：** 「しかし、$\fint_{\partial B(x,t)} g(y)\,dS(y) = \fint_{\partial B(0,1)} g(x+tz)\,dS(z)$ (置換 $y=x+tz$)。したがって $\dfrac{\partial}{\partial t}(\fint_{\partial B(x,t)} g\,dS) = \fint_{\partial B(0,1)} Dg(x+tz)\cdot z\,dS(z) = \fint_{\partial B(x,t)} Dg(y)\cdot\dfrac{y-x}{t}\,dS(y)$。」
+
 > **記号 $Dg$**: 勾配 (gradient)。$Dg=(g_{x_1},\dots,g_{x_n})$。Evans は $\nabla$ より $D$ を多用。
 > **記号 $\cdot$**: 内積。
 
@@ -436,9 +470,11 @@ $$\boxed{\,u(x,t)=\fint_{\partial B(x,t)}\bigl[t\,h(y)+g(y)+Dg(y)\cdot(y-x)\bigr
 ### 9.2 $n=2$ — 降下法 (method of descent)
 
 > *"Solution for $n=2$. No transformation like (17) works to convert the Euler–Poisson–Darboux equation into the one-dimensional wave equation when $n=2$. Instead we will take the initial-value problem (11) for $n=2$ and simply regard it as a problem for $n=3$, in which the third spatial variable $x_3$ does not appear."*
-
+>
 > *"Indeed, assuming $u\in C^2(\mathbb R^2\times[0,\infty))$ solves (11) for $n=2$, let us write*
 > $$\bar u(x_1,x_2,x_3,t):=u(x_1,x_2,t).\tag{23}"$$
+
+**和訳：** 「$n=2$ に対する解。$n=2$ のとき、Euler–Poisson–Darboux 方程式を 1 次元波動方程式に変換する (17) のような変換は機能しない。代わりに $n=2$ の初期値問題 (11) を $n=3$ の問題と見なす。ここで第 3 空間変数 $x_3$ は現れない。実際、$u\in C^2(\mathbb R^2\times[0,\infty))$ が $n=2$ の (11) を解くと仮定して、$\bar u(x_1,x_2,x_3,t):=u(x_1,x_2,t)$ と書く。」
 
 **手順**:
 1. $n=2$ の解 $u$ を $x_3$ 方向に **定数として** 拡張して $\bar u$ を作る (式 23)。
@@ -459,6 +495,8 @@ $$x_3 = \pm\gamma(y),\quad \gamma(y):=(t^2-|y-x|^2)^{1/2},\quad y\in B(x,t)$$
 
 > *"$\fint_{\partial \bar B(\bar x,t)} \bar g\,d\bar S = \dfrac{1}{4\pi t^2}\int_{\partial \bar B(\bar x,t)}\bar g\,d\bar S = \dfrac{2}{4\pi t^2}\int_{B(x,t)} g(y)\bigl(1+|D\gamma(y)|^2\bigr)^{1/2}\,dy,$*
 > *where $\gamma(y)=(t^2-|y-x|^2)^{1/2}$ for $y\in B(x,t)$. The factor "2" enters since $\partial \bar B(\bar x,t)$ consists of two hemispheres."*
+
+**和訳：** 「$\fint_{\partial \bar B(\bar x,t)} \bar g\,d\bar S = \dfrac{1}{4\pi t^2}\int_{\partial \bar B(\bar x,t)}\bar g\,d\bar S = \dfrac{2}{4\pi t^2}\int_{B(x,t)} g(y)(1+|D\gamma(y)|^2)^{1/2}\,dy$。ここで $\gamma(y)=(t^2-|y-x|^2)^{1/2}$ ($y\in B(x,t)$)。係数 2 が現れるのは、$\partial \bar B(\bar x,t)$ が 2 つの半球からなるため。」
 
 - $4\pi t^2$ は $\mathbb R^3$ の半径 $t$ 球の表面積
 - factor $2$: 上下半球の両方分
